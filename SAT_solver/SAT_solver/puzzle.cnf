@@ -1,0 +1,5 @@
+c This file contains the Einstain's puzzle expressed in CNF
+p cnf 2 3
+1 2 0
+-1 2 0
+2 -2 1 0
