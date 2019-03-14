@@ -14,17 +14,14 @@ struct assignemnt {
 
 //Intially read the data into array of vectors, we may want to consider implementing our custom object for stroing formula...Formula
 class Formula {
-	vector<int> * F;
 	int numOfvar;
 	int numOfClauses;
-	list<assignemnt> v;
 public:
-	Formula(int _numOfvar, int _numOfClauses);
+	vector<int> * F;
+	list<assignemnt> v;
+	Formula(int _numOfvar, int _numOfClauses, vector<int> * _F);
 	~Formula();
 	int getNumOfVar();
 	int getNumOfClauses();
-	list<assignemnt> getListOfAssignements();
-	void getListOfUnassignVar();
-
 
 };

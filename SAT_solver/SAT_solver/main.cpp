@@ -18,11 +18,11 @@ using namespace std;
 
 //Declare functions
 Formula LoadFormula();
-void printFormula(Formula phi);
+void printFormula(Formula &phi);
 void printAnswer(int ans);
 int UnitPropagation(Formula &phi);
 int AllVariablesAssigned(Formula &phi);
-assignemnt PickBranchingVariable(Formula &phi);
+void PickBranchingVariable(Formula &phi);
 int ConflictAnalysis(Formula &phi);
 int Backtrack(Formula &phi, int &beta);
 int CDCL(Formula phi);
@@ -52,6 +52,7 @@ int main() {
 */
 Formula LoadFormula() {
 	//The following code assume .cnf input file
+	int numOfvar, numOfClauses;
 	ifstream File;
 	File.open("puzzle.cnf");
 	if (!File) {
@@ -68,14 +69,14 @@ Formula LoadFormula() {
 			if (line.substr(2, 3) != "cnf") {
 				cout << "Error: Provided file is not in CNF format." << line.substr(2, 3) << endl;
 			}
-			a = stoi(line.substr(6, 1));
-			b = stoi(line.substr(8, 1));
+			numOfvar = stoi(line.substr(6, 1));
+			numOfClauses = stoi(line.substr(8, 1));
 			break;
 		}
 	}
 
 	//Read the rest of the file containing encoded formula
-	phi = new vector<int>[b];
+	vector<int> *phi = new vector<int>[numOfClauses];
 	int i = 0;
 	while (File) {
 		int temp = 1;
@@ -91,12 +92,14 @@ Formula LoadFormula() {
 		cout << endl;
 		*/
 		i++;
-		if (i == b) {
+		if (i == numOfClauses) {
 			break;
 		}
 	}
 
 	File.close();
+
+	return Formula(numOfvar, numOfClauses, phi);
 }
 
 /******************************************************
@@ -104,22 +107,22 @@ Formula LoadFormula() {
 *
 * @params: phi(Formula) -
 */
-void printFormula(Formula phi) {
-	cout << "Number of variables is " << a << ".\nNumber of clauses is " << b << "." << endl  << endl;
+void printFormula(Formula &phi) {
+	cout << "Number of variables is " << phi.getNumOfVar() << ".\nNumber of clauses is " << phi.getNumOfClauses() << "." << endl  << endl;
 	map<int, char> variables;
-	for (int i = 1; i <= a; i++) {
+	for (int i = 1; i <= phi.getNumOfVar(); i++) {
 		variables[i] = 'A' + i - 1;
 	}
-	for (int i = 0; i < b; i++) {
+	for (unsigned int i = 0; i < phi.getNumOfClauses(); i++) {
 		cout << "Clause " << i + 1 << ": ";
-		for (int j = 0; j < phi[i].size(); j++) {
-			if (phi[i][j] < 0) {
-				cout << "NOT " << variables[-phi[i][j]];
+		for (unsigned int j = 0; j < phi.F[i].size(); j++) {
+			if (phi.F[i][j] < 0) {
+				cout << "NOT " << variables[-phi.F[i][j]];
 			}
 			else {
-				cout << variables[phi[i][j]];
+				cout << variables[phi.F[i][j]];
 			}
-			if (j < phi[i].size() - 1) {
+			if (j < phi.F[i].size() - 1) {
 				cout << " OR ";
 			}
 		}
@@ -154,20 +157,21 @@ int UnitPropagation(Formula &phi) {
 
 	//If phi is is en empty clause return SAT
 	//If phi is square return CONFLICT
-
+	/*
 	//Construct a graph --- do we want to create it every time a new assignement is added? Could we resuse it partially?
-	int n = v.size() + 1;//No. of vertices of the graph
+	int n = phi.v.size() + 1;//No. of vertices of the graph
 	Graph g(n);
-	for (int i = 0; i < v.size(); i++) {
-		g.addEdge(v[i].x);
+	for (int i = 0; i < phi.v.size(); i++) {
+		g.addEdge(phi.v[i].x);
 	}
 	//Look for pairwise clause where there is particular variable and its negation
-	for (int i = 0; i < v.size(); i++) {
-		v[i] -> x;
-		v[i] -> val;
-		for (int j = 0; j < phi->size(); j++) {
+	for (int i = 0; i < phi.v.size(); i++) {
+		phi.v[i] -> x;
+		phi.v[i] -> val;
+		for (int j = 0; j < phi.F->size(); j++) {
 		}
 	}
+	*/
 }
 
 /******************************************************
@@ -186,7 +190,7 @@ int AllVariablesAssigned(Formula &phi) {
 * @params: phi(Formula) -
 * @ret:
 */
-assignemnt PickBranchingVariable(Formula &phi) {
+void PickBranchingVariable(Formula &phi) {
 	//TODO
 }
 
@@ -219,21 +223,20 @@ int Backtrack(Formula &phi, int &beta) {
 * @!!!: Is beta and dt int type?
 */
 int CDCL(Formula phi) {
-	if (UnitPropagation(phi, v) == CONFLICT) {
+	if (UnitPropagation(phi) == CONFLICT) {
 		return UNSAT;
 	}
 	int dl = 0;
-	while (!AllVariablesAssigned(phi, v)) {
-		assignemnt t = PickBranchingVariable(phi, v);
+	while (!AllVariablesAssigned(phi)) {
+		PickBranchingVariable(phi);
 		dl++;
-		v.push_back(t);
-		if (UnitPropagation(phi, v) == CONFLICT) {
-			int beta = ConflictAnalysis(phi, v); //Where do I declare beta? Here?
+		if (UnitPropagation(phi) == CONFLICT) {
+			int beta = ConflictAnalysis(phi); //Where do I declare beta? Here?
 			if (beta < 0) {
 				return UNSAT;
 			}
 			else {
-				Backtrack(phi, v, beta);
+				Backtrack(phi, beta);
 				dl = beta;
 			}
 		}
@@ -252,8 +255,8 @@ int CDCL(Formula phi) {
 * @!!!: Is beta and dt int type?
 */
 int DPLL(Formula phi, int decision, int level) {
-	if (phi->size() == 0) {
-		return SAT;
-	}
+	//if (phi.F.size() == 0) {
+	//	return SAT;
+	//}
 	//TODO
 }

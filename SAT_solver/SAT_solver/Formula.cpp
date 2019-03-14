@@ -1,9 +1,8 @@
 #include "Formula.h"
 
-
-
-Formula::Formula(int _numOfvar, int _numOfClauses)
+Formula::Formula(int _numOfvar, int _numOfClauses, vector<int> * _F)
 {
+	F = _F;
 	this->numOfvar = _numOfvar;
 	this->numOfClauses = _numOfClauses;
 }
@@ -21,9 +20,3 @@ int Formula::getNumOfClauses() {
 	return this->numOfClauses;
 }
 
-list<assignemnt> Formula::getListOfAssignements() {
-	return this->v;
-}
-
-void Formula::getListOfUnassignVar() {
-}
