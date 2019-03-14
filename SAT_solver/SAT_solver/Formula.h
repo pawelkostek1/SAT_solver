@@ -1,6 +1,7 @@
 #pragma once
 #include<vector>
 #include<list>
+#include"Graph.h"
 using namespace std;
 
 //Define variables
@@ -17,11 +18,14 @@ class Formula {
 	int numOfvar;
 	int numOfClauses;
 public:
-	vector<int> * F;
-	list<assignemnt> v;
+	vector<int> * formula;
+	list<assignemnt> assignedV;
+    list<int> unassignedV;
 	Formula(int _numOfvar, int _numOfClauses, vector<int> * _F);
 	~Formula();
+    Graph implicationGraph;
 	int getNumOfVar();
 	int getNumOfClauses();
-
+    int assignVariable(int literal,int value);
+    boolean allVariablesAssigned();
 };
