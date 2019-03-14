@@ -29,7 +29,13 @@ void Formula::assignVariable(int literal, int value){
     unassignedIndex.remove(it);
     assignedIndex.push_back(literal);
     assignments[literal] = value;
-    cout << assignedIndex << assignments << unassignedIndex;
+    
+}
+void Formula::unassignVariable(int literal){
+    auto it = find(assignedIndex.begin(),assignedIndex.end(),literal);
+    assignedIndex.remove(it);
+    unassignedIndex.push_back(literal);
+    assignments[literal] = -1;
 }
 
 bool Formula::allVariablesAssigned(){
