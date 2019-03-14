@@ -20,9 +20,9 @@ using namespace std;
 Formula LoadFormula();
 void printFormula(Formula &phi);
 void printAnswer(int ans);
-int UnitPropagation(Formula &phi);
+int UnitPropagation(Formula &phi, int literal);
 int AllVariablesAssigned(Formula &phi);
-void PickBranchingVariable(Formula &phi);
+int PickBranchingVariable(Formula &phi);
 int ConflictAnalysis(Formula &phi);
 int Backtrack(Formula &phi, int &beta);
 int CDCL(Formula phi);
@@ -153,35 +153,19 @@ void printAnswer(int ans) {
 * @params: phi(Formula) -
 * @ret:
 */
-int UnitPropagation(Formula &phi) {
+int UnitPropagation(Formula &phi, int literal) {
 
-	//If phi is is en empty clause return SAT
-	//If phi is square return CONFLICT
-
-	vector<int> clausesAssigned;
-	for (list<int>::iterator it = phi.assignedIndex.begin(); it != phi.assignedIndex.end(); ++it) {
-		for (int i = 0; i < phi.getNumOfClauses(); i++) {
-			auto it2 = find(phi.formula[i].begin(), phi.formula[i].end(), *it);  
-			if (it2 != phi.formula[i].end()) {
-				clausesAssigned.push_back(distance(phi.formula[i].begin(), it2));
-			}
+	if (phi.assignedIndex.size() == 0) { //Base case
+		return SAT;
+	}
+	else { //there exist some assigned variables
+		vector<int> assignementClauses = phi.clausesIndexes[literal];
+		for (int i = 0; i < assignementClauses.size(); i++) {
+			
+			phi.assignInfered(assignementClauses[i]);
+			//Need to consider case where you cannot infere anything
 		}
 	}
-	/*
-	//Construct a graph --- do we want to create it every time a new assignement is added? Could we resuse it partially?
-	int n = phi.v.size() + 1;//No. of vertices of the graph
-	Graph g(n);
-	for (int i = 0; i < phi.v.size(); i++) {
-		g.addEdge(phi.v[i].x);
-	}
-	//Look for pairwise clause where there is particular variable and its negation
-	for (int i = 0; i < phi.v.size(); i++) {
-		phi.v[i] -> x;
-		phi.v[i] -> val;
-		for (int j = 0; j < phi.F->size(); j++) {
-		}
-	}
-	*/
 }
 
 /******************************************************
@@ -200,8 +184,10 @@ int AllVariablesAssigned(Formula &phi) {
 * @params: phi(Formula) -
 * @ret:
 */
-void PickBranchingVariable(Formula &phi) {
+int PickBranchingVariable(Formula &phi) {
 	//TODO
+	int literal, value;
+	phi.assignVariable(literal, value);
 }
 
 /******************************************************
@@ -238,9 +224,9 @@ int CDCL(Formula phi) {
 	}
 	int dl = 0;
 	while (!AllVariablesAssigned(phi)) {
-		PickBranchingVariable(phi);
+		int literal = PickBranchingVariable(phi);
 		dl++;
-		if (UnitPropagation(phi) == CONFLICT) {
+		if (UnitPropagation(phi, literal) == CONFLICT) {
 			int beta = ConflictAnalysis(phi); //Where do I declare beta? Here?
 			if (beta < 0) {
 				return UNSAT;

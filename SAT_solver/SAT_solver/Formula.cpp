@@ -14,6 +14,15 @@ Formula::Formula(int _numOfvar, int _numOfClauses, vector<int> * _formula)
 		unassignedIndex.push_back(i);
 	}
 	//implicationGraph = new Graph();
+	
+	for (int j = 1; j <= getNumOfVar(); j++) {
+		for (int i = 0; i < getNumOfClauses(); i++) {
+			auto it2 = find(formula[i].begin(), formula[i].end(), j);
+			if (it2 != formula[i].end()) {
+				clausesIndexes[j].push_back(distance(formula[i].begin(), it2));
+			}
+		}
+	}
 }
 
 
@@ -58,4 +67,7 @@ void Formula::unassignVariable(int literal) {
 
 bool Formula::allVariablesAssigned(){
     return this->numOfvar == assignedIndex.size();
+}
+
+void Formula::assignInfered(int clauseIndex) {
 }
