@@ -20,7 +20,7 @@ public:
     //Graph implicationGraph;
 	int getNumOfVar();
 	int getNumOfClauses();
-	void assignVariable(int literal,int value);
+	void assignVariable(int literal, int value);
     void unassignVariable(int literal);
 	bool allVariablesAssigned();
 };
