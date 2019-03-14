@@ -26,9 +26,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="DIMACS.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Formula.h">
       <Filter>Header Files</Filter>
     </ClInclude>

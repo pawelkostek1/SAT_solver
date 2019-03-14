@@ -1,9 +1,9 @@
 #pragma once
+#include<iostream>
 #include<vector>
 #include<list>
 #include<unordered_map>
 #include"Graph.h"
-using namespace std;
 
 //Intially read the data into array of vectors, we may want to consider implementing our custom object for stroing formula...Formula
 class Formula {
@@ -12,7 +12,7 @@ class Formula {
 
 public:
 	vector<int> * formula;
-	unordered_map<int, int> assignements;
+	unordered_map<int, int> assignments;
     list<int> assignedIndex;
     list<int> unassignedIndex;
 	Formula(int _numOfvar, int _numOfClauses, vector<int> * _F);

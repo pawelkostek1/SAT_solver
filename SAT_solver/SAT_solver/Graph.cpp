@@ -1,7 +1,5 @@
 #include "Graph.h"
 
-
-
 Graph::Graph(int _numOfvertices) {
 	this->numOfvertices = _numOfvertices;
 	adj = new list<Node>[numOfvertices];
@@ -12,6 +10,9 @@ void Graph::addEdge(int u, int v, int edge) {
 	adj[u].push_back(node);
 }
 
+void Graph::addNode() {
+	this->numOfvertices++;
+}
 
 Graph::~Graph()
 {

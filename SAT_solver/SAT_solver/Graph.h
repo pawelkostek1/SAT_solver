@@ -28,7 +28,7 @@ public:
 class Graph {
 	int numOfvertices; //No. of vertices
 
-		   //Pointer to an array containng adjacency lists
+	//Pointer to an array containng adjacency lists
 	list<Node> *adj;
 
 public:
@@ -36,6 +36,8 @@ public:
 	~Graph();
 
 	void addEdge(int u, int v, int edge);
+
+	void addNode();
 
 };
 
