@@ -5,6 +5,8 @@
 #include<sstream>
 #include<vector>
 #include<map>
+#include"Formula.h"
+#include"Graph.h"
 
 using namespace std;
 
@@ -13,65 +15,31 @@ using namespace std;
 #define UNSAT 0
 #define SAT 1 
 
-//Define variables
-/*
- * @description: structure defining an assignement of the value to a given literal
- */
-struct assignemnt {
-	int x; //literal
-	int val; //can be 0 or 1
-};
-
-//Intially read the data into array of vectors, we may want to consider implementing our custom object for stroing formula...
-typedef vector<int> * formula;
-/*
-* @description: data structure containing the formula
-
-class formula {
-public:
-	//Constructor
-	formula() {
-	}
-
-	//Destructor
-	~formula() {
-	}
-
-private:
-
-};
-*/
 
 //Declare functions
-void LoadFormula(int &a, int &b, formula &phi);
-void printFormula(int a, int b, formula phi);
-void printAnswer(int ans, list<assignemnt> v);
-int UnitPropagation(formula &phi, list<assignemnt> &v);
-int AllVariablesAssigned(formula &phi, list<assignemnt> &v);
-assignemnt PickBranchingVariable(formula &phi, list<assignemnt> &v);
-int ConflictAnalysis(formula &phi, list<assignemnt> &v);
-int Backtrack(formula &phi, list<assignemnt> &v, int &beta);
-int CDCL(formula phi, list<assignemnt> v);
-int DPLL(formula phi, int decision, int level);
+Formula LoadFormula();
+void printFormula(Formula phi);
+void printAnswer(int ans);
+int UnitPropagation(Formula &phi);
+int AllVariablesAssigned(Formula &phi);
+assignemnt PickBranchingVariable(Formula &phi);
+int ConflictAnalysis(Formula &phi);
+int Backtrack(Formula &phi, int &beta);
+int CDCL(Formula phi);
+int DPLL(Formula phi, int decision, int level);
 
 
 int main() {
 
-	//Define variables
-	int a, b;
-	formula phi;
-	list<assignemnt> v;
-	
-	//Read the encoded Enstein's puzzle
-	LoadFormula(a, b, phi);
-	printFormula(a, b, phi);
+	//Read the encoded Enstein's puzzle into variable phi
+	Formula phi = LoadFormula();
+	printFormula(phi);
 
 	//Solve the puzzle
-	//int ans = CDCL(phi, v);
+	//int ans = CDCL(phi);
 
 	//Print the answer
-	//printAnswer(ans, v);
-
+	//printAnswer(ans);
 
 	while (1);
 	return 0;
@@ -80,11 +48,9 @@ int main() {
 /******************************************************
 * @description: Loads the formula
 *
-* @params: a(int) -
-* @params: b(int) -
-* @params: phi(formula) -
+* @params: phi(Formula) -
 */
-void LoadFormula(int &a, int &b, formula &phi) {
+Formula LoadFormula() {
 	//The following code assume .cnf input file
 	ifstream File;
 	File.open("puzzle.cnf");
@@ -136,11 +102,9 @@ void LoadFormula(int &a, int &b, formula &phi) {
 /******************************************************
 * @description: Prints the formula
 *
-* @params: a(int) -
-* @params: b(int) -
-* @params: phi(formula) -
+* @params: phi(Formula) -
 */
-void printFormula(int a, int b, formula phi) {
+void printFormula(Formula phi) {
 	cout << "Number of variables is " << a << ".\nNumber of clauses is " << b << "." << endl  << endl;
 	map<int, char> variables;
 	for (int i = 1; i <= a; i++) {
@@ -167,9 +131,9 @@ void printFormula(int a, int b, formula phi) {
 /******************************************************
 * @description:
 *
-* @params: v(assignment) -
+* @params: ans(int) -
 */
-void printAnswer(int ans, list<assignemnt> v) {
+void printAnswer(int ans) {
 	cout << "The solver produced following output: ";
 	if (ans == SAT) {
 		cout << "SAT" << endl;
@@ -183,74 +147,78 @@ void printAnswer(int ans, list<assignemnt> v) {
 /******************************************************
 * @description:
 *
-* @params: phi(formula) -
-* @params: v(assignment) -
+* @params: phi(Formula) -
 * @ret:
 */
-int UnitPropagation(formula &phi, list<assignemnt> &v) {
-	//Construct a graph --- do we want to create it every time a new assignement is added? Could we resuse it partially?
+int UnitPropagation(Formula &phi) {
 
+	//If phi is is en empty clause return SAT
+	//If phi is square return CONFLICT
+
+	//Construct a graph --- do we want to create it every time a new assignement is added? Could we resuse it partially?
+	int n = v.size() + 1;//No. of vertices of the graph
+	Graph g(n);
+	for (int i = 0; i < v.size(); i++) {
+		g.addEdge(v[i].x);
+	}
 	//Look for pairwise clause where there is particular variable and its negation
 	for (int i = 0; i < v.size(); i++) {
-		v[i]->x;
-		v[i]->val;
+		v[i] -> x;
+		v[i] -> val;
+		for (int j = 0; j < phi->size(); j++) {
+		}
 	}
 }
 
 /******************************************************
 * @description:
 *
-* @params: phi(formula) -
-* @params: v(assignment) -
+* @params: phi(Formula) -
 * @ret:
 */
-int AllVariablesAssigned(formula &phi, list<assignemnt> &v) {
+int AllVariablesAssigned(Formula &phi) {
 	//TODO
 }
 
 /******************************************************
 * @description:
 *
-* @params: phi(formula) -
-* @params: v(assignment) -
+* @params: phi(Formula) -
 * @ret:
 */
-assignemnt PickBranchingVariable(formula &phi, list<assignemnt> &v) {
+assignemnt PickBranchingVariable(Formula &phi) {
 	//TODO
 }
 
 /******************************************************
 * @description:
 *
-* @params: phi(formula) -
-* @params: v(assignment) -
+* @params: phi(Formula) -
 * @ret:
 */
-int ConflictAnalysis(formula &phi, list<assignemnt> &v) {
+int ConflictAnalysis(Formula &phi) {
 	//TODO
 }
 
 /******************************************************
  * @description:  
  *
- * @params: phi(formula) - 
- * @params: v(assignment) -
+ * @params: phi(Formula) - 
  * @ret: 
  */
-int Backtrack(formula &phi, list<assignemnt> &v, int &beta) {
+int Backtrack(Formula &phi, int &beta) {
 	//TODO
 }
 
 /******************************************************
 * @description:
 *
-* @params: phi(formula) -
-* @params: v(assignment) -
+* @params: phi(Formula) -
 * @ret:
 
 * @!!!: Is beta and dt int type?
 */
-int CDCL(formula phi, list<assignemnt> v) {
+int CDCL(Formula phi) {
 	if (UnitPropagation(phi, v) == CONFLICT) {
 		return UNSAT;
 	}
@@ -276,14 +244,14 @@ int CDCL(formula phi, list<assignemnt> v) {
 /******************************************************
 * @description:
 *
-* @params: phi(formula) -
+* @params: phi(Formula) -
 * @params: decision(decision) -
 * @params: level(int) -
 * @ret:
 
 * @!!!: Is beta and dt int type?
 */
-int DPLL(formula phi, int decision, int level) {
+int DPLL(Formula phi, int decision, int level) {
 	if (phi->size() == 0) {
 		return SAT;
 	}
