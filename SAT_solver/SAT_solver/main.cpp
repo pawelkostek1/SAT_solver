@@ -19,7 +19,7 @@ using namespace std;
  */
 struct assignemnt {
 	int x; //literal
-	int v; //can be 0 or 1
+	int val; //can be 0 or 1
 };
 
 //Intially read the data into array of vectors, we may want to consider implementing our custom object for stroing formula...
@@ -45,13 +45,14 @@ private:
 //Declare functions
 void LoadFormula(int &a, int &b, formula &phi);
 void printFormula(int a, int b, formula phi);
-void printAnswer(list<assignemnt> v);
+void printAnswer(int ans, list<assignemnt> v);
 int UnitPropagation(formula &phi, list<assignemnt> &v);
 int AllVariablesAssigned(formula &phi, list<assignemnt> &v);
 assignemnt PickBranchingVariable(formula &phi, list<assignemnt> &v);
 int ConflictAnalysis(formula &phi, list<assignemnt> &v);
 int Backtrack(formula &phi, list<assignemnt> &v, int &beta);
 int CDCL(formula phi, list<assignemnt> v);
+int DPLL(formula phi, int decision, int level);
 
 
 int main() {
@@ -66,10 +67,10 @@ int main() {
 	printFormula(a, b, phi);
 
 	//Solve the puzzle
-	//CDCL(phi, v);
+	//int ans = CDCL(phi, v);
 
 	//Print the answer
-	//printAnswer(v);
+	//printAnswer(ans, v);
 
 
 	while (1);
@@ -168,7 +169,14 @@ void printFormula(int a, int b, formula phi) {
 *
 * @params: v(assignment) -
 */
-void printAnswer(list<assignemnt> v) {
+void printAnswer(int ans, list<assignemnt> v) {
+	cout << "The solver produced following output: ";
+	if (ans == SAT) {
+		cout << "SAT" << endl;
+	}
+	else if (ans == UNSAT) {
+		cout << "UNSAT" << endl;
+	}
 	//TODO
 }
 
@@ -180,7 +188,13 @@ void printAnswer(list<assignemnt> v) {
 * @ret:
 */
 int UnitPropagation(formula &phi, list<assignemnt> &v) {
-	//TODO
+	//Construct a graph --- do we want to create it every time a new assignement is added? Could we resuse it partially?
+
+	//Look for pairwise clause where there is particular variable and its negation
+	for (int i = 0; i < v.size(); i++) {
+		v[i]->x;
+		v[i]->val;
+	}
 }
 
 /******************************************************
@@ -257,4 +271,21 @@ int CDCL(formula phi, list<assignemnt> v) {
 		}
 	}
 	return SAT;
+}
+
+/******************************************************
+* @description:
+*
+* @params: phi(formula) -
+* @params: decision(decision) -
+* @params: level(int) -
+* @ret:
+
+* @!!!: Is beta and dt int type?
+*/
+int DPLL(formula phi, int decision, int level) {
+	if (phi->size() == 0) {
+		return SAT;
+	}
+	//TODO
 }
