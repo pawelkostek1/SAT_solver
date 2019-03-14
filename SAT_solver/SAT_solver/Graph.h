@@ -26,13 +26,13 @@ public:
 * @description: Graph
 */
 class Graph {
-	int V; //No. of vertices
+	int numOfvertices; //No. of vertices
 
 		   //Pointer to an array containng adjacency lists
 	list<Node> *adj;
 
 public:
-	Graph(int V); //Constructor
+	Graph(int _numOfvertices); //Constructor
 	~Graph();
 
 	void addEdge(int u, int v, int edge);

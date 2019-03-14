@@ -1,11 +1,15 @@
 #include "Formula.h"
 
-Formula::Formula(int _numOfvar, int _numOfClauses, vector<int> * _F)
+Formula::Formula(int _numOfvar, int _numOfClauses, vector<int> * _formula)
 {
-	F = _F;
+	
 	this->numOfvar = _numOfvar;
 	this->numOfClauses = _numOfClauses;
-
+	formula = _formula;
+	for (int i = 1; i <= numOfvar; i++) {
+		assignements[i] = -1;
+	}
+	//implicationGraph = new Graph();
 }
 
 
@@ -20,18 +24,18 @@ int Formula::getNumOfVar() {
 int Formula::getNumOfClauses() {
 	return this->numOfClauses;
 }
-assignement Formula::assignVariable(int literal, int value){
+void Formula::assignVariable(int literal, int value){
     //check if literal is in list
-    auto it = find(unassignedV.begin(), unassignedV.end(), literal);
+
     // remove literal from unassignedV
-    unassignedV.remove(it,literal)
+
     //create assignement
-    assignedV.push_back(assignment(literal,value))
+
 
 
     // add assignement to assignedV
 }
 
-boolean Formula::allVariablesAssigned(){
+bool Formula::allVariablesAssigned(){
     return this->numOfvar == assignedV.size();
 }

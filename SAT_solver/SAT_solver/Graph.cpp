@@ -2,9 +2,9 @@
 
 
 
-Graph::Graph(int V) {
-	this->V = V;
-	adj = new list<Node>[V];
+Graph::Graph(int _numOfvertices) {
+	this->numOfvertices = _numOfvertices;
+	adj = new list<Node>[numOfvertices];
 }
 
 void Graph::addEdge(int u, int v, int edge) {
