@@ -2,7 +2,7 @@
 
 Formula::Formula(int _numOfvar, int _numOfClauses, vector<int> * _formula)
 {
-	
+
 	this->numOfvar = _numOfvar;
 	this->numOfClauses = _numOfClauses;
 	formula = _formula;
@@ -25,15 +25,11 @@ int Formula::getNumOfClauses() {
 	return this->numOfClauses;
 }
 void Formula::assignVariable(int literal, int value){
-    //check if literal is in list
-
-    // remove literal from unassignedV
-
-    //create assignement
-
-
-
-    // add assignement to assignedV
+    auto it = find(unassignedIndex.begin(),unassignedIndex.end(),literal);
+    unassignedIndex.remove(it);
+    assignedIndex.push_back(literal);
+    assignments[literal] = value;
+    cout << assignedIndex << assignments << unassignedIndex;
 }
 
 bool Formula::allVariablesAssigned(){
