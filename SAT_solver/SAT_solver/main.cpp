@@ -13,7 +13,7 @@ using namespace std;
 //Define constants
 #define CONFLICT -1
 #define UNSAT 0
-#define SAT 1 
+#define SAT 1
 
 
 //Declare functions
@@ -34,7 +34,7 @@ int main() {
 	//Read the encoded Enstein's puzzle into variable phi
 	Formula phi = LoadFormula();
 	printFormula(phi);
-
+    phi.assignVariable(2,1);
 	//Solve the puzzle
 	//int ans = CDCL(phi);
 
@@ -205,10 +205,10 @@ int ConflictAnalysis(Formula &phi) {
 }
 
 /******************************************************
- * @description:  
+ * @description:
  *
- * @params: phi(Formula) - 
- * @ret: 
+ * @params: phi(Formula) -
+ * @ret:
  */
 int Backtrack(Formula &phi, int &beta) {
 	//TODO

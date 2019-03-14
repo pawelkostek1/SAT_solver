@@ -9,12 +9,15 @@ using namespace std;
 class Formula {
 	int numOfvar;
 	int numOfClauses;
+
 public:
 	vector<int> * formula;
 	unordered_map<int, int> assignements;
+    list<int> assignedIndex;
+    list<int> unassignedIndex;
 	Formula(int _numOfvar, int _numOfClauses, vector<int> * _F);
 	~Formula();
-    Graph implicationGraph;
+    //Graph implicationGraph;
 	int getNumOfVar();
 	int getNumOfClauses();
 	void assignVariable(int literal,int value);
