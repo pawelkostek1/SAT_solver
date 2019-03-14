@@ -113,16 +113,16 @@ void printFormula(Formula &phi) {
 	for (int i = 1; i <= phi.getNumOfVar(); i++) {
 		variables[i] = 'A' + i - 1;
 	}
-	for (unsigned int i = 0; i < phi.getNumOfClauses(); i++) {
+	for (int i = 0; i < phi.getNumOfClauses(); i++) {
 		cout << "Clause " << i + 1 << ": ";
-		for (unsigned int j = 0; j < phi.F[i].size(); j++) {
-			if (phi.F[i][j] < 0) {
-				cout << "NOT " << variables[-phi.F[i][j]];
+		for (unsigned int j = 0; j < phi.formula[i].size(); j++) {
+			if (phi.formula[i][j] < 0) {
+				cout << "NOT " << variables[-phi.formula[i][j]];
 			}
 			else {
-				cout << variables[phi.F[i][j]];
+				cout << variables[phi.formula[i][j]];
 			}
-			if (j < phi.F[i].size() - 1) {
+			if (j < phi.formula[i].size() - 1) {
 				cout << " OR ";
 			}
 		}
