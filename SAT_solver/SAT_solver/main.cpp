@@ -157,6 +157,8 @@ int UnitPropagation(Formula &phi) {
 
 	//If phi is is en empty clause return SAT
 	//If phi is square return CONFLICT
+
+
 	/*
 	//Construct a graph --- do we want to create it every time a new assignement is added? Could we resuse it partially?
 	int n = phi.v.size() + 1;//No. of vertices of the graph
