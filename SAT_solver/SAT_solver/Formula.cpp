@@ -31,11 +31,11 @@ void Formula::assignVariable(int literal, int value){
     unassignedIndex.remove(literal);
     assignedIndex.push_back(literal);
 	assignments[literal] = value;
-	for (std::list<int>::iterator it = assignedIndex.begin(); it != assignedIndex.end(); ++it) {
+	for (list<int>::iterator it = assignedIndex.begin(); it != assignedIndex.end(); ++it) {
 		cout << *it << " ";
 	}
 	cout << endl;
-	for (std::list<int>::iterator it = unassignedIndex.begin(); it != unassignedIndex.end(); ++it) {
+	for (list<int>::iterator it = unassignedIndex.begin(); it != unassignedIndex.end(); ++it) {
 		cout << *it << " ";
 	}
 	cout << endl;
