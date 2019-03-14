@@ -165,6 +165,7 @@ int UnitPropagation(Formula &phi) {
 			if (it2 != phi.formula[i].end()) {
 				clausesAssigned.push_back(distance(phi.formula[i].begin(), it2));
 			}
+				
 		}
 	}
 	/*

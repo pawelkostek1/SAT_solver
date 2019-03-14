@@ -11,6 +11,7 @@ Formula::Formula(int _numOfvar, int _numOfClauses, vector<int> * _formula)
 	formula = _formula;
 	for (int i = 1; i <= numOfvar; i++) {
 		assignments[i] = -1;
+		unassignedIndex.push_back(i);
 	}
 	//implicationGraph = new Graph();
 }
@@ -33,14 +34,17 @@ void Formula::assignVariable(int literal, int value) {
 	assignedIndex.push_back(literal);
 
 	assignments[literal] = value;
+	cout << "Assigned variables:" << endl;
 	for (list<int>::iterator it = assignedIndex.begin(); it != assignedIndex.end(); ++it) {
 		cout << *it << " ";
 	}
 	cout << endl;
+	cout << "Unassigned variables:" << endl;
 	for (list<int>::iterator it = unassignedIndex.begin(); it != unassignedIndex.end(); ++it) {
 		cout << *it << " ";
 	}
 	cout << endl;
+	cout << "Assignements:" << endl;
 	for (unsigned int i = 1; i <= assignments.size(); i++) {
 		cout << i << ": " << assignments[i] << endl;
 	}
