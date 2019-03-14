@@ -21,5 +21,6 @@ public:
 	int getNumOfVar();
 	int getNumOfClauses();
 	void assignVariable(int literal,int value);
+    void unassignVariable(int literal);
 	bool allVariablesAssigned();
 };
