@@ -30,6 +30,7 @@ int Formula::getNumOfClauses() {
 void Formula::assignVariable(int literal, int value){
     unassignedIndex.remove(literal);
     assignedIndex.push_back(literal);
+
 	assignments[literal] = value;
 	for (list<int>::iterator it = assignedIndex.begin(); it != assignedIndex.end(); ++it) {
 		cout << *it << " ";
@@ -41,7 +42,11 @@ void Formula::assignVariable(int literal, int value){
 	cout << endl;
 	for (int i = 1; i <= assignments.size(); i++) {
 		cout << i << ": " << assignments[i] << endl;
-	}
+}
+void Formula::unassignVariable(int literal){
+    assignedIndex.remove(literal);
+    unassignedIndex.push_back(literal);
+    assignments[literal] = -1;
 }
 
 bool Formula::allVariablesAssigned(){
