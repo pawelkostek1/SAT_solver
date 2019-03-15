@@ -5,15 +5,12 @@
 #include<sstream>
 #include<vector>
 #include<map>
+#include<iostream>
 #include"Formula.h"
 #include"Graph.h"
-
+#include"constants.h"
 using namespace std;
 
-//Define constants
-#define CONFLICT -1
-#define UNSAT 0
-#define SAT 1
 
 
 //Declare functions
@@ -22,7 +19,7 @@ void printFormula(Formula &phi);
 void printAnswer(int ans);
 int UnitPropagation(Formula &phi, int literal);
 int AllVariablesAssigned(Formula &phi);
-int PickBranchingVariable(Formula &phi);
+tuple<int,int> PickBranchingVariable(Formula phi);
 int ConflictAnalysis(Formula &phi);
 int Backtrack(Formula &phi, int &beta);
 int CDCL(Formula phi);
@@ -30,16 +27,17 @@ int DPLL(Formula phi, int decision, int level);
 
 
 int main() {
-
+    char command[50] = "ls -l";
+    system(command);
 	//Read the encoded Enstein's puzzle into variable phi
 	Formula phi = LoadFormula();
-	printFormula(phi);
-    phi.assignVariable(2,1);
+    phi.printFormula();
+    //phi.assignVariable(2,1,false);
 	//Solve the puzzle
-	//int ans = CDCL(phi);
+	int ans = CDCL(phi);
 
 	//Print the answer
-	//printAnswer(ans);
+	printAnswer(ans);
 
 	while (1);
 	return 0;
@@ -48,16 +46,17 @@ int main() {
 /******************************************************
 * @description: Loads the formula
 *
-* @params: phi(Formula) -
+* @paramsphi: phi(Formula) -
 */
 Formula LoadFormula() {
 	//The following code assume .cnf input file
-	int numOfvar, numOfClauses;
+    int numOfvar = 0, numOfClauses = 0;
 	ifstream File;
 	File.open("puzzle.cnf");
 	if (!File) {
-		cout << "Unable to open file puzzle.txt";
+		cout << "Unable to open file puzzle.cnf" << endl;
 	}
+    cout << "File was loaded into memory" << endl;
 	string line;
 	while (getline(File, line)) {
 		//read the file line by line
@@ -74,13 +73,13 @@ Formula LoadFormula() {
 			break;
 		}
 	}
-
 	//Read the rest of the file containing encoded formula
-	vector<int> *phi = new vector<int>[numOfClauses];
+	vector<vector<int> > phi = vector<vector<int> >();
 	int i = 0;
 	while (File) {
 		int temp = 1;
 		File >> temp;
+        phi.push_back(vector<int>());
 		while (temp) {
 			phi[i].push_back(temp);
 			File >> temp;
@@ -98,43 +97,17 @@ Formula LoadFormula() {
 	}
 
 	File.close();
-
+    
 	return Formula(numOfvar, numOfClauses, phi);
 }
 
-/******************************************************
-* @description: Prints the formula
-*
-* @params: phi(Formula) -
-*/
-void printFormula(Formula &phi) {
-	cout << "Number of variables is " << phi.getNumOfVar() << ".\nNumber of clauses is " << phi.getNumOfClauses() << "." << endl  << endl;
-	map<int, char> variables;
-	for (int i = 1; i <= phi.getNumOfVar(); i++) {
-		variables[i] = 'A' + i - 1;
-	}
-	for (int i = 0; i < phi.getNumOfClauses(); i++) {
-		cout << "Clause " << i + 1 << ": ";
-		for (unsigned int j = 0; j < phi.formula[i].size(); j++) {
-			if (phi.formula[i][j] < 0) {
-				cout << "NOT " << variables[-phi.formula[i][j]];
-			}
-			else {
-				cout << variables[phi.formula[i][j]];
-			}
-			if (j < phi.formula[i].size() - 1) {
-				cout << " OR ";
-			}
-		}
-		cout << endl;
-	}
-	cout << endl;
-}
+
+
 
 /******************************************************
 * @description:
 *
-* @params: ans(int) -
+ * @paramsans ans(int) -
 */
 void printAnswer(int ans) {
 	cout << "The solver produced following output: ";
@@ -150,83 +123,100 @@ void printAnswer(int ans) {
 /******************************************************
 * @description:
 *
-* @params: phi(Formula) -
+* @paramsphi: phi(Formula) -
 * @ret:
 */
-int UnitPropagation(Formula &phi, int literal) {
 
-	if (phi.assignedIndex.size() == 0) { //Base case
-		return SAT;
+int UnitPropagation(Formula &phi, tuple<int,int> branchVar) {
+    //Start by assigning the branchVar to the assignedVariables in phi
+	if (get<0>(branchVar) == 0) { //Base case
+		//if we end up in here it means this is the first time we run this function
+        //ResolveAnySingleLiterals(phi);
+        cout << "Lets start by removing all single literal clauses" << endl;
+        return phi.removeSingleLiteralVariables();
 	}
 	else { //there exist some assigned variables
-		vector<int> assignementClauses = phi.clausesIndexes[literal];
+        phi.assignVariable(get<0>(branchVar), get<1>(branchVar),false);
+        vector<int> assignementClauses = phi.clausesIndexes[get<0>(branchVar)];
+        list<tuple<int,int>> inferedList = list<tuple<int,int>>();
 		for (int i = 0; i < assignementClauses.size(); i++) {
+            //Go through each clause and check if we can infer a variable or not
+			tuple<int,int> inferedVar = phi.getInfered(assignementClauses[i]);
+            if (get<0>(inferedVar) != 0){
+                //this method will assign the variable to the assignmend hasmap as well as update the
+                //implication graph
+                phi.assignVariable(get<0>(inferedVar), get<1>(inferedVar),true);
+            }
 			
-			phi.assignInfered(assignementClauses[i]);
-			//Need to consider case where you cannot infere anything
 		}
 	}
+    return CONFLICT;
 }
 
 /******************************************************
 * @description:
 *
-* @params: phi(Formula) -
+ * @paramsphi phi(Formula) -
 * @ret:
 */
 int AllVariablesAssigned(Formula &phi) {
 	//TODO
+    return 1;
 }
 
 /******************************************************
 * @description:
 *
-* @params: phi(Formula) -
+ * @paramsphi phi(Formula) -
 * @ret:
 */
-int PickBranchingVariable(Formula &phi) {
+tuple<int,int> PickBranchingVariable(Formula phi) {
 	//TODO
-	int literal, value;
-	phi.assignVariable(literal, value);
+    int absLiteral = *next(phi.unassignedIndex.begin(), rand() % phi.unassignedIndex.size());
+    return tuple<int,int>(absLiteral,rand() % 1);
 }
 
 /******************************************************
 * @description:
 *
-* @params: phi(Formula) -
+ * @paramsphi phi(Formula) -
 * @ret:
 */
 int ConflictAnalysis(Formula &phi) {
 	//TODO
+    return 1;
 }
 
 /******************************************************
  * @description:
  *
- * @params: phi(Formula) -
+ * @paramsphi: phi(Formula) -
  * @ret:
  */
 int Backtrack(Formula &phi, int &beta) {
 	//TODO
+    return 1;
 }
 
 /******************************************************
 * @description:
 *
-* @params: phi(Formula) -
+ * @paramsphi phi(Formula) -
 * @ret:
 
 * @!!!: Is beta and dt int type?
 */
 int CDCL(Formula phi) {
-	if (UnitPropagation(phi) == CONFLICT) {
+    int dl = 0;
+	if (UnitPropagation(phi,tuple<int,int>(0,-1)) == CONFLICT) {
 		return UNSAT;
 	}
-	int dl = 0;
-	while (!AllVariablesAssigned(phi)) {
-		int literal = PickBranchingVariable(phi);
+	while (!phi.allVariablesAssigned()) {
+        phi.printFormula();
+		tuple<int,int> branchVar = PickBranchingVariable(phi);
+        cout << "Picking A Branching variable: " << get<0>(branchVar) << " value: " << get<1>(branchVar) << endl;
 		dl++;
-		if (UnitPropagation(phi, literal) == CONFLICT) {
+		if (UnitPropagation(phi, branchVar) == CONFLICT) {
 			int beta = ConflictAnalysis(phi); //Where do I declare beta? Here?
 			if (beta < 0) {
 				return UNSAT;
@@ -250,9 +240,9 @@ int CDCL(Formula phi) {
 
 * @!!!: Is beta and dt int type?
 */
-int DPLL(Formula phi, int decision, int level) {
+/*int DPLL(Formula phi, int decision, int level) {
 	//if (phi.F.size() == 0) {
 	//	return SAT;
 	//}
 	//TODO
-}
+}*/

@@ -1,24 +1,30 @@
 #pragma once
 #include<list>
-
+#include<tuple>
 using namespace std;
+
+
 
 /*
 * @description: Node
 */
 class Node {
-	int v;
-	int edge;
+	int value;
+    int absLiteral;
+    int depth;
+    int type;
+    list<Node> parentNodes;
+    
 public:
-	Node(int _v, int _e) {
-		v = _v;
-		edge = _e;
+	Node(tuple<int,int> _variable,int _type,int _depth, list<Node> _parentNodes) {
+		value = get<1>(_variable);
+        absLiteral = get<0>(_variable);
+		parentNodes = _parentNodes;
+        depth = _depth;
+        type = _type;
 	}
 	int getV() {
-		return v;
-	}
-	int getEdge() {
-		return edge;
+		return value;
 	}
 };
 
@@ -32,12 +38,9 @@ class Graph {
 	list<Node> *adj;
 
 public:
-	Graph(int _numOfvertices); //Constructor
+	Graph(); //Constructor
 	~Graph();
-
-	void addEdge(int u, int v, int edge);
-
-	void addNode();
+	void addNode(list<Node> parentNodes,int literal,bool implication);
 
 };
 

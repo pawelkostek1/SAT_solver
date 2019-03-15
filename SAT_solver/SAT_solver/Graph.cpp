@@ -1,19 +1,15 @@
 #include "Graph.h"
-
-Graph::Graph(int _numOfvertices) {
-	this->numOfvertices = _numOfvertices;
-	adj = new list<Node>[numOfvertices];
-}
-
-void Graph::addEdge(int u, int v, int edge) {
-	Node node(v, edge);
-	adj[u].push_back(node);
-}
-
-void Graph::addNode() {
-	this->numOfvertices++;
+#include "constants.h"
+Graph::Graph() {
+	
 }
 
 Graph::~Graph()
 {
 }
+
+void Graph::addNode(list<Node> parentNodes,int literal,bool implication) {
+    
+}
+
+
