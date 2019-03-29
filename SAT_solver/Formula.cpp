@@ -1,6 +1,7 @@
-#include "Formula.h"
-#include "constants.h"
+#include"Formula.h"
+#include"constants.h"
 #include<map>
+#include<algorithm>
 using namespace std;
 
 Formula::Formula(int _numOfvar, int _numOfClauses, vector< vector<int>> _formula)
@@ -9,6 +10,7 @@ Formula::Formula(int _numOfvar, int _numOfClauses, vector< vector<int>> _formula
 	this->numOfClauses = _numOfClauses;
 	formula = _formula;
     variables = unordered_map<int, Variable>();
+	//Can optimize later by sorting it while the clauses are added to the formula
     sort(formula.begin(), formula.end(), [](const vector<int> & a, const vector<int> & b){ return a.size() < b.size(); });
     
     for (int i = 1; i <= _numOfvar; i++) {
@@ -29,6 +31,8 @@ void Formula::addVariable(int absLiteral,int value){
     index(absLiteral);
     numOfvar++;
 }
+
+
 void Formula::removeVariable(int absLiteral){
     variables.erase(absLiteral);
     unassignedIndex.remove(absLiteral);
@@ -37,6 +41,7 @@ void Formula::removeVariable(int absLiteral){
     numOfvar--;
     
 }
+
 
 void Formula::index(int absLiteral){
     for (int i = 0; i < getNumOfClauses(); i++) {
@@ -54,6 +59,7 @@ void Formula::index(int absLiteral){
         }
     }
 }
+
 int Formula::getNumOfVar() {
 	return this->numOfvar;
 }
@@ -116,7 +122,7 @@ int Formula::removeSingleLiteralVariables(){
     list<int> removedClauses = list<int>();
     unordered_map<int, int> singleLiteralVariableSign = unordered_map<int, int>();
     vector<int> variablesWithOneLiteral = vector<int>();
-    int approvedClauses = 0;
+    unsigned int approvedClauses = 0;
     int i = 0;
     while(approvedClauses < formula.size()){
         //if a clause has one literal add it to the variablesWithOneLiteral vector
@@ -145,7 +151,7 @@ int Formula::removeSingleLiteralVariables(){
             int incrementI = 1;
             int incrementA = 1;
             cout << "Lets see if we can find the variables in the single literal bucket" << variablesWithOneLiteral.size() << endl;
-            for(int j = 0; j < variablesWithOneLiteral.size(); j++){
+            for(int unsigned j = 0; j < variablesWithOneLiteral.size(); j++){
                 int literal = variablesWithOneLiteral[j];
                 int compLiteral = literal*-1;
                 cout << "variable to test: " << literal << "complement: " << compLiteral << endl;
@@ -190,14 +196,14 @@ int Formula::removeSingleLiteralVariables(){
         
     }
     //remove each variable that had a single literal clause from any index or assignment list
-    for (int i = 0; i < variablesWithOneLiteral.size(); i++){
+    for (unsigned int i = 0; i < variablesWithOneLiteral.size(); i++){
         removeVariable(abs(variablesWithOneLiteral[variablesWithOneLiteral[i]]));
     }
     
-    for(int i = 0; i < formula.size(); i++){
+    for(int unsigned i = 0; i < formula.size(); i++){
         vector<int> clause = formula[i];
         cout << "ClauseId: " << i << endl;
-        for(int j = 0; j < clause.size(); j++){
+        for(int unsigned j = 0; j < clause.size(); j++){
             cout << "\tLiteral: " << clause[j] << endl;
         }
     }

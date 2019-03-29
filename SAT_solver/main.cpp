@@ -15,24 +15,24 @@ using namespace std;
 
 //Declare functions
 Formula LoadFormula();
-void printFormula(Formula &phi);
 void printAnswer(int ans);
-int UnitPropagation(Formula &phi, int literal);
+int UnitPropagation(Formula &phi, tuple<int, int> branchVar);
 int AllVariablesAssigned(Formula &phi);
 tuple<int,int> PickBranchingVariable(Formula phi);
 int ConflictAnalysis(Formula &phi);
 int Backtrack(Formula &phi, int &beta);
 int CDCL(Formula phi);
-int DPLL(Formula phi, int decision, int level);
+//int DPLL(Formula phi, int decision, int level);
 
 
 int main() {
-    char command[50] = "ls -l";
-    system(command);
+
 	//Read the encoded Enstein's puzzle into variable phi
 	Formula phi = LoadFormula();
     phi.printFormula();
-    //phi.assignVariable(2,1,false);
+    
+	//phi.assignVariable(2,1,false);
+	
 	//Solve the puzzle
 	int ans = CDCL(phi);
 
@@ -131,7 +131,6 @@ int UnitPropagation(Formula &phi, tuple<int,int> branchVar) {
     //Start by assigning the branchVar to the assignedVariables in phi
 	if (get<0>(branchVar) == 0) { //Base case
 		//if we end up in here it means this is the first time we run this function
-        //ResolveAnySingleLiterals(phi);
         cout << "Lets start by removing all single literal clauses" << endl;
         return phi.removeSingleLiteralVariables();
 	}
@@ -139,14 +138,16 @@ int UnitPropagation(Formula &phi, tuple<int,int> branchVar) {
         phi.assignVariable(get<0>(branchVar), get<1>(branchVar),false);
         vector<int> assignementClauses = phi.clausesIndexes[get<0>(branchVar)];
         list<tuple<int,int>> inferedList = list<tuple<int,int>>();
-		for (int i = 0; i < assignementClauses.size(); i++) {
+		for (unsigned int i = 0; i < assignementClauses.size(); i++) {
             //Go through each clause and check if we can infer a variable or not
+			
 			tuple<int,int> inferedVar = phi.getInfered(assignementClauses[i]);
             if (get<0>(inferedVar) != 0){
                 //this method will assign the variable to the assignmend hasmap as well as update the
                 //implication graph
                 phi.assignVariable(get<0>(inferedVar), get<1>(inferedVar),true);
             }
+			
 			
 		}
 	}
