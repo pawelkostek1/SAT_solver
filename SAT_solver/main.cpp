@@ -214,9 +214,12 @@ void Backtrack(Formula &phi, int beta) {
 	   Using beta that is the level we want to back track to we use the aformentioned data structure to 
 	   unassign all the variables that were set up until the given level beta.
 	*/
-	for (int i = phi.implicationGraph.levelIndex.size() - 1; i > beta; i--) {
-		for (unsigned int j = 0; j < phi.implicationGraph.levelIndex[i].size(); j++) {
-			phi.unassignVariable(phi.implicationGraph.levelIndex[i][j]);
+	int initialSize = phi.implicationGraph.levelIndex.size() - 1;
+	for (int i = initialSize; i > beta; i--) {
+		vector<int> levelIndexList = phi.implicationGraph.levelIndex.back();
+		phi.implicationGraph.levelIndex.pop_back();
+		for (unsigned int j = 0; j < levelIndexList.size(); j++) {
+			phi.unassignVariable(levelIndexList[j]);
 		}
 	}
 }
