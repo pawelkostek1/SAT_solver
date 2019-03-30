@@ -10,7 +10,7 @@ class Clause {
     
 public:
     vector<int> literals;
-    Clause(vector<int> _value);
-    Clause(); //Constructor
+    Clause(vector<int> _value); //Constructor
+	Clause(); //Constructor
     ~Clause();
 };

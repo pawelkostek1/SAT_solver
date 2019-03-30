@@ -28,9 +28,6 @@ int Graph::addNode(int literal,int level,vector<Variable> parentVariables) {
 }
 void Graph::setNodeParents(int nodeId,vector<Variable> parentVariables){
     
-    
-    
-    
     Node node = nodes[nodeId];
     for (int i = 0; i < parentVariables.size(); i++){
         int parentId = parentVariables[i].literal;

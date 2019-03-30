@@ -1,7 +1,7 @@
 #pragma once
 #include<vector>
-using namespace std;
 
+using namespace std;
 
 class Variable {
     
@@ -11,8 +11,8 @@ public:
     char letter;
 	float activity;
     Variable(int _literal, int _value);
+	Variable();
     ~Variable();
-    Variable();
 };
 
 struct ImplicationAnalysis{
