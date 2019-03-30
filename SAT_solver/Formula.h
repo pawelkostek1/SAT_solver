@@ -9,7 +9,6 @@
 #include"constants.h"
 //Intially read the data into array of vectors, we may want to consider implementing our custom object for stroing formula...Formula
 
-
 class Formula {
 	int numOfvar;
 	int numOfClauses;

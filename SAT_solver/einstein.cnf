@@ -1,0 +1,42 @@
+c This file contains the Einstain's puzzle expressed in CNF
+p cnf 125 5
+c The Brit live in the red house.
+26 0
+c The Swede keeps dogs as pets.
+56 0
+c The Dane drinks tea.
+86 0
+c The Norwegian lives in the first house.
+21 0
+c The German smokes Prince.
+119 0
+c The green house's owner drinks coffee.
+-27 77 0
+-32 82 0
+-37 87 0
+-42 92 0
+-47 97 0
+c The person who smokes Pall Mall rears birds.
+-102 53 0
+-107 58 0
+-112 63 0
+-117 68 0
+-122 73 0
+c The owner of the yellow house smokes Dunhill.
+-29 103 0
+-34 108 0
+-39 113 0
+-44 118 0
+-49 123 0
+c The man living in the center house drinks milk.
+-3 79 0
+-8 84 0
+-13 89 0
+-18 94 0
+-23 99 0
+c The owner who smokes Bluemasters drinks beer.
+-101 80 0
+-106 85 0
+-111 90 0
+-116 95 0
+-121 100 0

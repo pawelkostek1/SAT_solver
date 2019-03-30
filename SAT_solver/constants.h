@@ -1,4 +1,5 @@
 #pragma once
+
 enum {
 	NOCONFLICT = 1,
 	CONFLICT = -1,

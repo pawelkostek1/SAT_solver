@@ -122,7 +122,6 @@ void printAnswer(int ans) {
 */
 int UnitPropagation(Formula &phi, Variable branchVar,int level) {
 
-    
     if (branchVar.literal == 0){
         return phi.removeSingleLiteralVariables();
     }
@@ -148,8 +147,6 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
                 }
                 vars.push_back(result.target);
             }
-            
-            
         }
     }
     

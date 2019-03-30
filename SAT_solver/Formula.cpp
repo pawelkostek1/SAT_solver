@@ -4,7 +4,6 @@
 #include<algorithm>
 using namespace std;
 
-
 Formula::Formula(int _numOfvar, int _numOfClauses, vector<Clause> _formula)
 {
 
@@ -64,7 +63,6 @@ int Formula::getNumOfVar() {
 int Formula::getNumOfClauses() {
 	return this->numOfClauses;
 }
-
 
 int Formula::assignVariable(int literal, int value,int level,vector<Variable> parentVariables) {
     //if the variable already has a value that is not -1 and does not match the value

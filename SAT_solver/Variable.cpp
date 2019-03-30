@@ -7,14 +7,13 @@ Variable::Variable(int _literal,int _value) {
 	activity = 0.0;
 }
 
-Variable::~Variable()
-{
-}
-
 Variable::Variable()
 {
 }
 
+Variable::~Variable()
+{
+}
 
 
 
