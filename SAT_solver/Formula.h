@@ -5,8 +5,8 @@
 #include<unordered_map>
 #include"Graph.h"
 #include"Variable.h"
-#include"Change.h"
 #include"Clause.h"
+#include"constants.h"
 //Intially read the data into array of vectors, we may want to consider implementing our custom object for stroing formula...Formula
 
 
@@ -27,10 +27,9 @@ public:
     Graph implicationGraph;
 	int getNumOfVar();
 	int getNumOfClauses();
-	int assignVariable(int literal, int value,int level);
+	int assignVariable(int literal, int value,int level,vector<Variable> parentVariables);
     void unassignVariable(int literal);
 	bool allVariablesAssigned();
-	Variable getInferred(int clauseIndex);
     int removeSingleLiteralVariables();
     void index(int absLiteral);
     void printFormula();
@@ -39,4 +38,5 @@ public:
 
 	void bumpActivities(vector<int> learnedClauseVars);
 	void decayActivities();
+    ImplicationAnalysis setInferredVariable(int clauseIndex);
 };

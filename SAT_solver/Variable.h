@@ -1,4 +1,6 @@
-
+#pragma once
+#include<vector>
+using namespace std;
 
 class Variable {
     
@@ -12,3 +14,7 @@ public:
     Variable();
 };
 
+struct ImplicationAnalysis{
+    Variable target;
+    vector<Variable> parents;
+};

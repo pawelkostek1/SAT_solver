@@ -1,5 +1,4 @@
 #pragma once
-
 enum {
 	NOCONFLICT = 1,
 	CONFLICT = -1,
@@ -8,3 +7,4 @@ enum {
 	IMPLICATION = 100,
 	ASSIGNMENT = 200
 };
+

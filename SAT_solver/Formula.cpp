@@ -5,6 +5,7 @@
 #include<algorithm>
 using namespace std;
 
+
 Formula::Formula(int _numOfvar, int _numOfClauses, vector<Clause> _formula)
 {
 
@@ -70,7 +71,7 @@ int Formula::getNumOfClauses() {
 }
 
 
-int Formula::assignVariable(int literal, int value,int level) {
+int Formula::assignVariable(int literal, int value,int level,vector<Variable> parentVariables) {
     //if the variable already has a value that is not -1 and does not match the value
     //we want to assign there is a conflict 
     if (variables[literal].value != value and variables[literal].value != -1){
@@ -83,7 +84,7 @@ int Formula::assignVariable(int literal, int value,int level) {
         variables[literal].value = value;
     }
     //Add the
-    implicationGraph.addNode(literal,level);
+    implicationGraph.addNode(literal,level,parentVariables);
     return NOCONFLICT;
 }
 
@@ -99,13 +100,12 @@ bool Formula::allVariablesAssigned(){
 
 
 
-
-
-
-Variable Formula::getInferred(int clauseIndex){
-    int unassignedCount = 0;
+ImplicationAnalysis Formula::setInferredVariable(int clauseIndex){
     Clause clause = formula[clauseIndex];
+
+    int unassignedCount = 0;
     Variable inferredVar = Variable(0,-1);
+    vector<Variable> parentVars = vector<Variable>();
     for (int i = 1; i <= clause.literals.size(); i++){
         int literal = clause.literals[i];
         int literalId = abs(literal);
@@ -114,6 +114,8 @@ Variable Formula::getInferred(int clauseIndex){
         //The intuition here is that if any literal value in the cluse is true we cannot infer any other variable
         if ((!positive and var.value == 0) or (positive and var.value == 1)){
             break;
+        }else if (var.value != -1){
+            parentVars.push_back(variables[literalId]);
         }else if (var.value == -1){
             //the variable is unnassigned
             unassignedCount+=1;
@@ -131,7 +133,10 @@ Variable Formula::getInferred(int clauseIndex){
             }
         }
     }
-    return inferredVar;
+    ImplicationAnalysis result = ImplicationAnalysis();
+    result.target = inferredVar;
+    result.parents = parentVars;
+    return result;
 }
 
 

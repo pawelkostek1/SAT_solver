@@ -9,7 +9,6 @@
 #include"Formula.h"
 #include"Graph.h"
 #include"constants.h"
-#include"Change.h"
 #include"Clause.h"
 using namespace std;
 
@@ -130,27 +129,34 @@ void printAnswer(int ans) {
 
 int UnitPropagation(Formula &phi, Variable branchVar,int level) {
 
-        int assignmentResult = phi.assignVariable(branchVar.literal,branchVar.value,level);
-        if (assignmentResult == CONFLICT){
-            return CONFLICT;
-        }
+    
     if (branchVar.literal == 0){
         return phi.removeSingleLiteralVariables();
     }
-        vector<int> literalClauses = phi.clausesIndexes[branchVar.literal];
-        for (unsigned int i = 0; i < literalClauses.size(); i++) {
+    int assignmentResult = phi.assignVariable(branchVar.literal,branchVar.value,level,vector<Variable>());
+    if (assignmentResult == CONFLICT){
+        return CONFLICT;
+    }
+    vector<Variable> vars = vector<Variable>();
+    vars.push_back(branchVar);
+    
+    while(!phi.allVariablesAssigned() and vars.size() > 0){
+        //we need assign the
+        Variable var = vars.front();
+        vars.erase(vars.begin(), vars.begin()+1);
+        vector<int> varClauses = phi.clausesIndexes[var.literal];
+        for (unsigned int i = 0; i < varClauses.size(); i++) {
             //Go through each clause and check if we can infer a variable or not
-            Variable inferredVar = phi.getInferred(literalClauses[i]);
-                
-            if (inferredVar.literal != 0){
-                //this method will assign the variable to the assignmend hasmap as well as update the
-                //implication graph
-                int result = UnitPropagation(phi,inferredVar,level);
-                if (result == CONFLICT){
-                    return CONFLICT;
-                }
+            ImplicationAnalysis result = phi.setInferredVariable(varClauses[i]);
+            if (result.target.literal != 0){
+                phi.assignVariable(result.target.literal, result.target.value, level, result.parents);
+                vars.push_back(result.target);
             }
+            
+            
         }
+    }
+    
     return NOCONFLICT;
 }
 

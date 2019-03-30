@@ -3,8 +3,8 @@
 #include<tuple>
 #include"Node.h"
 #include<unordered_map>
-
 #include<vector>
+#include"Variable.h"
 using namespace std;
 
 /*
@@ -18,7 +18,8 @@ public:
     unordered_map<int,vector<int>> levelIndex;
 	Graph(); //Constructor
 	~Graph();
-	int addNode(int absLiteral,int level);
-    void setNodeParent(list<Variable> variables)
+	int addNode(int literal,int level,vector<Variable> parentVariables);
+    
+    void setNodeParents(int nodeId,vector<Variable> parentVariables);
 };
 

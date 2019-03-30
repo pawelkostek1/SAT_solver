@@ -11,7 +11,7 @@ Graph::~Graph()
 {
 }
 
-int Graph::addNode(int literal,int level) {
+int Graph::addNode(int literal,int level,vector<Variable> parentVariables) {
     int id = int(nodes.size());
     nodes[id] = (Node(id,literal,level));
     if(levelIndex.find(level) != levelIndex.end()){
@@ -22,12 +22,23 @@ int Graph::addNode(int literal,int level) {
     }
     levelIndex[level].push_back(literal);
     variableIndex[literal].push_back(id);
+    setNodeParents(id,parentVariables);
     return id;
 }
-void Graph::setNodeParent(int nodeId,list<Variable> parentNodes){
+void Graph::setNodeParents(int nodeId,vector<Variable> parentVariables){
+    
+    
+    
+    
     Node node = nodes[nodeId];
-    for (int i = 0; i < parentNodes.size(); i++){
-        node.addParent(<#int nodeId#>)
+    for (int i = 0; i < parentVariables.size(); i++){
+        int parentId = parentVariables[i].literal;
+        vector<int> parentNodes = variableIndex[parentId];
+        for (int j = 0; j < parentNodes.size(); j++){
+            int parentNodeId = parentNodes[j];
+            node.addParent(parentNodeId);
+        }
+        
     }
 }
 
