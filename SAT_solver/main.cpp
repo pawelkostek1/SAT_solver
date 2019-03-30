@@ -200,8 +200,9 @@ int ConflictAnalysis(Formula &phi) {
 
 		We also need to consider the case where the conflict can no longer be resolved, in which case we return UNSAT.
 	*/
-	
-    return level;
+	phi.implicationGraph.
+    
+		return level;
 }
 
 /******************************************************

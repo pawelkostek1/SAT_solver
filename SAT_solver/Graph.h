@@ -16,6 +16,7 @@ public:
     unordered_map<int,Node> nodes;
     unordered_map<int,vector<int>> variableIndex;
     unordered_map<int,vector<int>> levelIndex;
+	int ConflictingLiteralId;
 	Graph(); //Constructor
 	~Graph();
 	int addNode(int literal,int level,vector<Variable> parentVariables);
