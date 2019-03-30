@@ -45,7 +45,7 @@ int main() {
 /******************************************************
 * @description: Loads the formula
 *
-* @paramsphi: phi(Formula) -
+* @params: phi(Formula) -
 */
 Formula LoadFormula() {
 	//The following code assume .cnf input file
@@ -106,7 +106,7 @@ Formula LoadFormula() {
 /******************************************************
 * @description:
 *
- * @paramsans ans(int) -
+ * @params ans(int) -
 */
 void printAnswer(int ans) {
 	cout << "The solver produced following output: ";
@@ -122,7 +122,7 @@ void printAnswer(int ans) {
 /******************************************************
 * @description:
 *
-* @paramsphi: phi(Formula) -
+* @params: phi(Formula) -
 * @ret:
 */
 
@@ -156,7 +156,7 @@ int UnitPropagation(Formula &phi, tuple<int,int> branchVar) {
 /******************************************************
 * @description:
 *
- * @paramsphi phi(Formula) -
+ * @params phi(Formula) -
 * @ret:
 */
 tuple<int,int> PickBranchingVariable(Formula phi) {
@@ -164,15 +164,23 @@ tuple<int,int> PickBranchingVariable(Formula phi) {
     //int absLiteral = *next(phi.unassignedIndex.begin(), rand() % phi.unassignedIndex.size());
     //return tuple<int,int>(absLiteral,rand() % 1);
 
+	float highestActivity = 0.0;
+	int brachingVar = -1;
 	//Use Variable State Independent Decaying Sum (VSIDS) to pick branching varible
-	return tuple<int, int>(0, 0);
-
+	for (auto& it : phi.variables) {
+		float currentActivity = it.second.activity;
+		if (highestActivity < currentActivity) {
+			highestActivity = currentActivity;
+			brachingVar = it.first;
+		}
+	}
+	return tuple<int, int>(brachingVar, rand() % 2); //Not sure how do you decide which value to set??? Currently, it is assigned randomly.
 }
 
 /******************************************************
 * @description:
 *
- * @paramsphi phi(Formula) -
+ * @params phi(Formula) -
 * @ret:
 */
 int ConflictAnalysis(Formula &phi) {
@@ -197,7 +205,7 @@ int ConflictAnalysis(Formula &phi) {
 /******************************************************
  * @description:
  *
- * @paramsphi: phi(Formula) -
+ * @params: phi(Formula) -
  * @ret:
  */
 void Backtrack(Formula &phi, int &beta) {
@@ -210,10 +218,8 @@ void Backtrack(Formula &phi, int &beta) {
 /******************************************************
 * @description:
 *
- * @paramsphi phi(Formula) -
+* @params phi(Formula) -
 * @ret:
-
-* @!!!: Is beta and dt int type?
 */
 int CDCL(Formula phi) {
     int dl = 0;
@@ -238,20 +244,3 @@ int CDCL(Formula phi) {
 	}
 	return SAT;
 }
-
-/******************************************************
-* @description:
-*
-* @params: phi(Formula) -
-* @params: decision(decision) -
-* @params: level(int) -
-* @ret:
-
-* @!!!: Is beta and dt int type?
-*/
-/*int DPLL(Formula phi, int decision, int level) {
-	//if (phi.F.size() == 0) {
-	//	return SAT;
-	//}
-	//TODO
-}*/
