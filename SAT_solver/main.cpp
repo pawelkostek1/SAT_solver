@@ -213,6 +213,7 @@ void Backtrack(Formula &phi, int beta) {
 		phi.implicationGraph.levelIndex.erase(i);
 		for (unsigned int j = 0; j < levelIndexList.size(); j++) {
 			phi.unassignVariable(levelIndexList[j]);
+			phi.implicationGraph.removeNodesByLiteralId(levelIndexList[j]);
 		}
 	}
 }
