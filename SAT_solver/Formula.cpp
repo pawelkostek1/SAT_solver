@@ -191,10 +191,7 @@ int Formula::removeSingleLiteralVariables(){
         //when all variablesWithOneLiteral have been
         if(approvedClauses < formula.size() and i == formula.size()-1){
             i = 0;
-        }
-        
-        
-        
+        }  
     }
     //remove each variable that had a single literal clause from any index or assignment list
     for (unsigned int i = 0; i < variablesWithOneLiteral.size(); i++){

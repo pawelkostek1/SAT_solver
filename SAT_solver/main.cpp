@@ -16,8 +16,8 @@ using namespace std;
 //Declare functions
 Formula LoadFormula();
 void printAnswer(int ans);
-int UnitPropagation(Formula &phi, tuple<int, int> branchVar);
-tuple<int,int> PickBranchingVariable(Formula phi);
+int UnitPropagation(Formula &phi, Variable branchVar);
+Variable PickBranchingVariable(Formula phi);
 int ConflictAnalysis(Formula &phi);
 void Backtrack(Formula &phi, int &beta);
 int CDCL(Formula phi);
@@ -126,16 +126,16 @@ void printAnswer(int ans) {
 * @ret:
 */
 
-int UnitPropagation(Formula &phi, tuple<int,int> branchVar) {
+int UnitPropagation(Formula &phi, Variable branchVar) {
     //Start by assigning the branchVar to the assignedVariables in phi
-	if (get<0>(branchVar) == 0) { //Base case
+	if (branchVar.literal == 0) { //Base case
 		//if we end up in here it means this is the first time we run this function
         cout << "Lets start by removing all single literal clauses" << endl;
         return phi.removeSingleLiteralVariables();
 	}
 	else { //there exist some assigned variables
-        phi.assignVariable(get<0>(branchVar), get<1>(branchVar),false);
-        vector<int> assignementClauses = phi.clausesIndexes[get<0>(branchVar)];
+        phi.assignVariable(branchVar.literal, branchVar.value, false);
+        vector<int> assignementClauses = phi.clausesIndexes[branchVar.literal];
         list<tuple<int,int>> inferedList = list<tuple<int,int>>();
 		for (unsigned int i = 0; i < assignementClauses.size(); i++) {
             //Go through each clause and check if we can infer a variable or not
@@ -159,10 +159,10 @@ int UnitPropagation(Formula &phi, tuple<int,int> branchVar) {
  * @params phi(Formula) -
 * @ret:
 */
-tuple<int,int> PickBranchingVariable(Formula phi) {
+Variable PickBranchingVariable(Formula phi) {
 
     //int absLiteral = *next(phi.unassignedIndex.begin(), rand() % phi.unassignedIndex.size());
-    //return tuple<int,int>(absLiteral,rand() % 1);
+    //return Variable(absLiteral,rand() % 1);
 
 	float highestActivity = 0.0;
 	int brachingVar = -1;
@@ -174,7 +174,7 @@ tuple<int,int> PickBranchingVariable(Formula phi) {
 			brachingVar = it.first;
 		}
 	}
-	return tuple<int, int>(brachingVar, rand() % 2); //Not sure how do you decide which value to set??? Currently, it is assigned randomly.
+	return Variable(brachingVar, rand() % 2); //Not sure how do you decide which value to set??? Currently, it is assigned randomly.
 }
 
 /******************************************************
@@ -223,13 +223,13 @@ void Backtrack(Formula &phi, int &beta) {
 */
 int CDCL(Formula phi) {
     int dl = 0;
-	if (UnitPropagation(phi,tuple<int,int>(0,-1)) == CONFLICT) {
+	if (UnitPropagation(phi, Variable(0,-1)) == CONFLICT) {
 		return UNSAT;
 	}
 	while (!phi.allVariablesAssigned()) {
         phi.printFormula();
-		tuple<int,int> branchVar = PickBranchingVariable(phi);
-        cout << "Picking A Branching variable: " << get<0>(branchVar) << " value: " << get<1>(branchVar) << endl;
+		Variable branchVar = PickBranchingVariable(phi);
+        cout << "Picking A Branching variable: " << branchVar.literal << " value: " << branchVar.value << endl;
 		dl++;
 		if (UnitPropagation(phi, branchVar) == CONFLICT) {
 			int beta = ConflictAnalysis(phi); //Where do I declare beta? Here?
