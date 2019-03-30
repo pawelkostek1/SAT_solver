@@ -13,8 +13,6 @@
 #include"Clause.h"
 using namespace std;
 
-
-
 //Declare functions
 Formula LoadFormula();
 void printAnswer(int ans);
@@ -23,8 +21,6 @@ Variable PickBranchingVariable(Formula phi);
 int ConflictAnalysis(Formula &phi);
 void Backtrack(Formula &phi, int beta);
 int CDCL(Formula phi);
-//int DPLL(Formula phi, int decision, int level);
-
 
 int main() {
     
@@ -103,8 +99,6 @@ Formula LoadFormula() {
 }
 
 
-
-
 /******************************************************
 * @description:
 *
@@ -127,7 +121,6 @@ void printAnswer(int ans) {
 * @params: phi(Formula) -
 * @ret:
 */
-
 int UnitPropagation(Formula &phi, Variable branchVar,int level) {
 
         int assignmentResult = phi.assignVariable(branchVar.literal,branchVar.value,level);
@@ -216,8 +209,8 @@ void Backtrack(Formula &phi, int beta) {
 	*/
 	int initialSize = phi.implicationGraph.levelIndex.size() - 1;
 	for (int i = initialSize; i > beta; i--) {
-		vector<int> levelIndexList = phi.implicationGraph.levelIndex.back();
-		phi.implicationGraph.levelIndex.pop_back();
+		vector<int> levelIndexList = phi.implicationGraph.levelIndex[i];
+		phi.implicationGraph.levelIndex.erase(i);
 		for (unsigned int j = 0; j < levelIndexList.size(); j++) {
 			phi.unassignVariable(levelIndexList[j]);
 		}

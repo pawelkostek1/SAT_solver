@@ -1,5 +1,5 @@
-
 #include "Variable.h"
+
 Variable::Variable(int _literal,int _value) {
     literal = _literal;
     value = _value;

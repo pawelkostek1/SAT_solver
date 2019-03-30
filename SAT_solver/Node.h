@@ -4,8 +4,6 @@
 #include"Variable.h"
 using namespace std;
 
-
-
 /*
 * @description: Node
 */

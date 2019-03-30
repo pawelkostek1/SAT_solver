@@ -1,7 +1,6 @@
 #include"Formula.h"
 #include"constants.h"
 #include<map>
-
 #include<algorithm>
 using namespace std;
 
@@ -21,7 +20,6 @@ Formula::Formula(int _numOfvar, int _numOfClauses, vector<Clause> _formula)
     implicationGraph = Graph();
 }
 
-
 Formula::~Formula()
 {
 }
@@ -33,7 +31,6 @@ void Formula::addVariable(int absLiteral,int value){
     numOfvar++;
 }
 
-
 void Formula::removeVariable(int absLiteral){
     variables.erase(absLiteral);
     unassignedIndex.remove(absLiteral);
@@ -41,7 +38,6 @@ void Formula::removeVariable(int absLiteral){
     clausesIndexes.erase(absLiteral);
     numOfvar--;
 }
-
 
 void Formula::index(int absLiteral){
     for (int i = 0; i < getNumOfClauses(); i++) {
@@ -60,7 +56,6 @@ void Formula::index(int absLiteral){
     }
 }
 
-
 int Formula::getNumOfVar() {
 	return this->numOfvar;
 }
@@ -68,7 +63,6 @@ int Formula::getNumOfVar() {
 int Formula::getNumOfClauses() {
 	return this->numOfClauses;
 }
-
 
 int Formula::assignVariable(int literal, int value,int level) {
     //if the variable already has a value that is not -1 and does not match the value
@@ -96,11 +90,6 @@ void Formula::unassignVariable(int literal) {
 bool Formula::allVariablesAssigned(){
     return this->numOfvar == assignedIndex.size();
 }
-
-
-
-
-
 
 Variable Formula::getInferred(int clauseIndex){
     int unassignedCount = 0;
@@ -133,17 +122,6 @@ Variable Formula::getInferred(int clauseIndex){
     }
     return inferredVar;
 }
-
-
-
-
-
-
-
-
-
-
-
 
 int Formula::removeSingleLiteralVariables(){
     cout << "hello";
@@ -235,8 +213,6 @@ int Formula::removeSingleLiteralVariables(){
     
     return NOCONFLICT;
 }
-
-
 
 void Formula::printFormula() {
     cout << "Number of variables is " << getNumOfVar() << ".\nNumber of clauses is " << getNumOfClauses() << "." << endl  << endl;
