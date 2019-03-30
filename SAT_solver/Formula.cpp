@@ -1,6 +1,7 @@
 #include"Formula.h"
 #include"constants.h"
 #include<map>
+
 #include<algorithm>
 using namespace std;
 
@@ -232,4 +233,16 @@ void Formula::printFormula() {
         cout << endl;
     }
     cout << endl;
+}
+
+void Formula::bumpActivities(vector<int> learnedClauseVars) {
+	for (unsigned int i = 0; i < learnedClauseVars.size(); i++) {
+		variables[learnedClauseVars[i]].activity += 1.0;
+	}
+}
+
+void Formula::decayActivities() {
+	for (auto& it : variables) {
+		it.second.activity *= this->decay;
+	}
 }

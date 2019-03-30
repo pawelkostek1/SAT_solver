@@ -17,10 +17,9 @@ using namespace std;
 Formula LoadFormula();
 void printAnswer(int ans);
 int UnitPropagation(Formula &phi, tuple<int, int> branchVar);
-int AllVariablesAssigned(Formula &phi);
 tuple<int,int> PickBranchingVariable(Formula phi);
 int ConflictAnalysis(Formula &phi);
-int Backtrack(Formula &phi, int &beta);
+void Backtrack(Formula &phi, int &beta);
 int CDCL(Formula phi);
 //int DPLL(Formula phi, int decision, int level);
 
@@ -145,7 +144,7 @@ int UnitPropagation(Formula &phi, tuple<int,int> branchVar) {
             if (get<0>(inferedVar) != 0){
                 //this method will assign the variable to the assignmend hasmap as well as update the
                 //implication graph
-                phi.assignVariable(get<0>(inferedVar), get<1>(inferedVar),true);
+                phi.assignVariable(get<0>(inferedVar), get<1>(inferedVar),true); 
             }
 			
 			
@@ -160,21 +159,14 @@ int UnitPropagation(Formula &phi, tuple<int,int> branchVar) {
  * @paramsphi phi(Formula) -
 * @ret:
 */
-int AllVariablesAssigned(Formula &phi) {
-	//TODO
-    return 1;
-}
-
-/******************************************************
-* @description:
-*
- * @paramsphi phi(Formula) -
-* @ret:
-*/
 tuple<int,int> PickBranchingVariable(Formula phi) {
-	//TODO
-    int absLiteral = *next(phi.unassignedIndex.begin(), rand() % phi.unassignedIndex.size());
-    return tuple<int,int>(absLiteral,rand() % 1);
+
+    //int absLiteral = *next(phi.unassignedIndex.begin(), rand() % phi.unassignedIndex.size());
+    //return tuple<int,int>(absLiteral,rand() % 1);
+
+	//Use Variable State Independent Decaying Sum (VSIDS) to pick branching varible
+	return tuple<int, int>(0, 0);
+
 }
 
 /******************************************************
@@ -184,8 +176,22 @@ tuple<int,int> PickBranchingVariable(Formula phi) {
 * @ret:
 */
 int ConflictAnalysis(Formula &phi) {
-	//TODO
-    return 1;
+	
+	int level = 0;
+
+	//Perform decay of the activities
+	phi.decayActivities();
+
+	//Learn the clause
+	/*
+		You use the graph to go back to all the closest parents of the conflict, this gives you a learned clause.
+		You add the clause to the formula and then you use the graph to find the level that corresponds to the earliest root 
+		that resulted in the conflict.
+
+		We also need to consider the case where the conflict can no longer be resolved, in which case we return UNSAT.
+	*/
+	
+    return level;
 }
 
 /******************************************************
@@ -194,9 +200,11 @@ int ConflictAnalysis(Formula &phi) {
  * @paramsphi: phi(Formula) -
  * @ret:
  */
-int Backtrack(Formula &phi, int &beta) {
-	//TODO
-    return 1;
+void Backtrack(Formula &phi, int &beta) {
+	/* phi stores a map of levels and asignments that were done at a this level.
+	   Using beta that is the level we want to back track to we use the aformentioned data structure to 
+	   unassign all the variables that were set up until the given level beta.
+	*/
 }
 
 /******************************************************
