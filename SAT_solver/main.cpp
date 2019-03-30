@@ -18,11 +18,10 @@ using namespace std;
 //Declare functions
 Formula LoadFormula();
 void printAnswer(int ans);
-int UnitPropagation(Formula &phi, tuple<int, int> branchVar);
-int AllVariablesAssigned(Formula &phi);
+int UnitPropagation(Formula &phi, Variable branchVar,int level);
 Variable PickBranchingVariable(Formula phi);
 int ConflictAnalysis(Formula &phi);
-int Backtrack(Formula &phi, int &beta);
+void Backtrack(Formula &phi, int &beta);
 int CDCL(Formula phi);
 //int DPLL(Formula phi, int decision, int level);
 
@@ -48,7 +47,7 @@ int main() {
 /******************************************************
 * @description: Loads the formula
 *
-* @paramsphi: phi(Formula) -
+* @params: phi(Formula) -
 */
 Formula LoadFormula() {
 	//The following code assume .cnf input file
@@ -109,7 +108,7 @@ Formula LoadFormula() {
 /******************************************************
 * @description:
 *
- * @paramsans ans(int) -
+ * @params ans(int) -
 */
 void printAnswer(int ans) {
 	cout << "The solver produced following output: ";
@@ -125,18 +124,12 @@ void printAnswer(int ans) {
 /******************************************************
 * @description:
 *
-* @paramsphi: phi(Formula) -
+* @params: phi(Formula) -
 * @ret:
 */
 
 int UnitPropagation(Formula &phi, Variable branchVar,int level) {
-    //Start by assigning the branchVar to the assignedVariables in phi
-	if (branchVar.literal == 0) { //Base case
-		//if we end up in here it means this is the first time we run this function
-        cout << "Lets start by removing all single literal clauses" << endl;
-        return phi.removeSingleLiteralVariables();
-	}
-	else { //there exist some assigned variables
+
         int assignmentResult = phi.assignVariable(branchVar.literal,branchVar.value,level);
         if (assignmentResult == CONFLICT){
             return CONFLICT;
@@ -155,62 +148,76 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
                 }
             }
         }
-    }
     return NOCONFLICT;
 }
 
 /******************************************************
 * @description:
 *
- * @paramsphi phi(Formula) -
-* @ret:
-*/
-int AllVariablesAssigned(Formula &phi) {
-	//TODO
-    return 1;
-}
-
-/******************************************************
-* @description:
-*
- * @paramsphi phi(Formula) -
+ * @params phi(Formula) -
 * @ret:
 */
 Variable PickBranchingVariable(Formula phi) {
-	//TODO
-    int absLiteral = *next(phi.unassignedIndex.begin(), rand() % phi.unassignedIndex.size());
-    return Variable(absLiteral,rand() % 2);
+
+    //int absLiteral = *next(phi.unassignedIndex.begin(), rand() % phi.unassignedIndex.size());
+    //return Variable(absLiteral,rand() % 1);
+
+	float highestActivity = 0.0;
+	int brachingVar = -1;
+	//Use Variable State Independent Decaying Sum (VSIDS) to pick branching varible
+	for (auto& it : phi.variables) {
+		float currentActivity = it.second.activity;
+		if (highestActivity < currentActivity) {
+			highestActivity = currentActivity;
+			brachingVar = it.first;
+		}
+	}
+	return Variable(brachingVar, rand() % 2); //Not sure how do you decide which value to set??? Currently, it is assigned randomly.
 }
 
 /******************************************************
 * @description:
 *
- * @paramsphi phi(Formula) -
+ * @params phi(Formula) -
 * @ret:
 */
 int ConflictAnalysis(Formula &phi) {
-	//TODO
-    return 1;
+	
+	int level = 0;
+
+	//Perform decay of the activities
+	phi.decayActivities();
+
+	//Learn the clause
+	/*
+		You use the graph to go back to all the closest parents of the conflict, this gives you a learned clause.
+		You add the clause to the formula and then you use the graph to find the level that corresponds to the earliest root 
+		that resulted in the conflict.
+
+		We also need to consider the case where the conflict can no longer be resolved, in which case we return UNSAT.
+	*/
+	
+    return level;
 }
 
 /******************************************************
  * @description:
  *
- * @paramsphi: phi(Formula) -
+ * @params: phi(Formula) -
  * @ret:
  */
-int Backtrack(Formula &phi, int &beta) {
-	//TODO
-    return 1;
+void Backtrack(Formula &phi, int &beta) {
+	/* phi stores a map of levels and asignments that were done at a this level.
+	   Using beta that is the level we want to back track to we use the aformentioned data structure to 
+	   unassign all the variables that were set up until the given level beta.
+	*/
 }
 
 /******************************************************
 * @description:
 *
- * @paramsphi phi(Formula) -
+* @params phi(Formula) -
 * @ret:
-
-* @!!!: Is beta and dt int type?
 */
 int CDCL(Formula phi) {
     int dl = 0;
@@ -236,21 +243,3 @@ int CDCL(Formula phi) {
 	return SAT;
 }
 
-
-
-/******************************************************
-* @description:
-*
-* @params: phi(Formula) -
-* @params: decision(decision) -
-* @params: level(int) -
-* @ret:
-
-* @!!!: Is beta and dt int type?
-*/
-/*int DPLL(Formula phi, int decision, int level) {
-	//if (phi.F.size() == 0) {
-	//	return SAT;
-	//}
-	//TODO
-}*/

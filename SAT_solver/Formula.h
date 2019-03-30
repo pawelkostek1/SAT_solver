@@ -13,13 +13,14 @@
 class Formula {
 	int numOfvar;
 	int numOfClauses;
+	float decay = 0.8;
 
 public:
 	vector<Clause> formula;
 	unordered_map<int, Variable> variables;
     list<int> assignedIndex;
     list<int> unassignedIndex;
-    list<Change> changes;
+
     unordered_map<int, vector<int> > clausesIndexes;
 	Formula(int _numOfvar, int _numOfClauses, vector<Clause> _F);
 	~Formula();
@@ -35,5 +36,7 @@ public:
     void printFormula();
     void addVariable(int absLiteral,int value);
     void removeVariable(int absLiteral);
-    
+
+	void bumpActivities(vector<int> learnedClauseVars);
+	void decayActivities();
 };

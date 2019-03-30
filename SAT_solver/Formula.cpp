@@ -1,6 +1,7 @@
 #include"Formula.h"
 #include"constants.h"
 #include<map>
+
 #include<algorithm>
 using namespace std;
 
@@ -216,10 +217,7 @@ int Formula::removeSingleLiteralVariables(){
         //when all variablesWithOneLiteral have been
         if(approvedClauses < formula.size() and i == formula.size()-1){
             i = 0;
-        }
-        
-        
-        
+        }  
     }
     //remove each variable that had a single literal clause from any index or assignment list
     for (unsigned int i = 0; i < variablesWithOneLiteral.size(); i++){
@@ -257,4 +255,16 @@ void Formula::printFormula() {
         cout << endl;
     }
     cout << endl;
+}
+
+void Formula::bumpActivities(vector<int> learnedClauseVars) {
+	for (unsigned int i = 0; i < learnedClauseVars.size(); i++) {
+		variables[learnedClauseVars[i]].activity += 1.0;
+	}
+}
+
+void Formula::decayActivities() {
+	for (auto& it : variables) {
+		it.second.activity *= this->decay;
+	}
 }
