@@ -21,7 +21,7 @@ void printAnswer(int ans);
 int UnitPropagation(Formula &phi, Variable branchVar,int level);
 Variable PickBranchingVariable(Formula phi);
 int ConflictAnalysis(Formula &phi);
-void Backtrack(Formula &phi, int &beta);
+void Backtrack(Formula &phi, int beta);
 int CDCL(Formula phi);
 //int DPLL(Formula phi, int decision, int level);
 
@@ -194,7 +194,7 @@ int ConflictAnalysis(Formula &phi) {
 	//Learn the clause
 	/*
 		You use the graph to go back to all the closest parents of the conflict, this gives you a learned clause.
-		You add the clause to the formula and then you use the graph to find the level that corresponds to the earliest root 
+		You add the clause to the formula and then you use the graph to find the level before the one that corresponds to the earliest root 
 		that resulted in the conflict.
 
 		We also need to consider the case where the conflict can no longer be resolved, in which case we return UNSAT.
@@ -209,11 +209,16 @@ int ConflictAnalysis(Formula &phi) {
  * @params: phi(Formula) -
  * @ret:
  */
-void Backtrack(Formula &phi, int &beta) {
+void Backtrack(Formula &phi, int beta) {
 	/* phi stores a map of levels and asignments that were done at a this level.
 	   Using beta that is the level we want to back track to we use the aformentioned data structure to 
 	   unassign all the variables that were set up until the given level beta.
 	*/
+	for (int i = phi.implicationGraph.levelIndex.size() - 1; i > beta; i--) {
+		for (unsigned int j = 0; j < phi.implicationGraph.levelIndex[i].size(); j++) {
+			phi.unassignVariable(phi.implicationGraph.levelIndex[i][j]);
+		}
+	}
 }
 
 /******************************************************
@@ -233,7 +238,7 @@ int CDCL(Formula phi) {
         cout << "Picking A Branching variable: " << branchVar.literal << " value: " << branchVar.value << endl;
 		dl++;
 		if (UnitPropagation(phi, branchVar,dl) == CONFLICT) {
-			int beta = ConflictAnalysis(phi); //Where do I declare beta? Here?
+			int beta = ConflictAnalysis(phi);
 			if (beta < 0) {
 				return UNSAT;
 			}
