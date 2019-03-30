@@ -2,6 +2,7 @@
 #include"constants.h"
 #include"Node.h"
 #include<vector>
+using namespace std;
 
 Graph::Graph() {
 	
@@ -51,6 +52,11 @@ void Graph::removeNodesByLiteralId(int literalId){
     variableIndex[literalId] = vector<int>();
 }
 
-
+void Graph::printGraph(){
+    for(int i = 0; i < levelIndex.size(); i++){
+        //cout << "LVL" << i << endl;
+        
+    }
+}
 
 

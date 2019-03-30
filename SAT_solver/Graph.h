@@ -5,6 +5,8 @@
 #include<unordered_map>
 #include<vector>
 #include"Variable.h"
+#include<algorithm>
+
 using namespace std;
 
 /*
@@ -21,5 +23,6 @@ public:
 	int addNode(int literal,int level,vector<Variable> parentVariables);
     void setNodeParents(int nodeId,vector<Variable> parentVariables);
     void removeNodesByLiteralId(int literalId);
+    void printGraph();
 };
 

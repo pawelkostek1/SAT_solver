@@ -238,7 +238,7 @@ int CDCL(Formula phi) {
 	if (UnitPropagation(phi,Variable(0,-1),dl) == CONFLICT) {
 		return UNSAT;
 	}
-	/*while (!phi.allVariablesAssigned()) {
+	while (!phi.allVariablesAssigned()) {
         for (auto& it : phi.unassignedIndex)
             cout << it << endl;
 		Variable branchVar = PickBranchingVariable(phi);
@@ -257,7 +257,7 @@ int CDCL(Formula phi) {
 				dl = beta;
 			}
 		}
-	}*/
+	}
     phi.printFormula();
     phi.printIndex();
 	return SAT;
