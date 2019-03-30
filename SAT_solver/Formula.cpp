@@ -211,9 +211,11 @@ int Formula::removeSingleLiteralVariables(){
             i = 0;
         }  
     }
+    
     //remove each variable that had a single literal clause from any index or assignment list
     for (unsigned int i = 0; i < variablesWithOneLiteral.size(); i++){
-        removeVariable(abs(variablesWithOneLiteral[variablesWithOneLiteral[i]]));
+        cout << "remove: " << abs(variablesWithOneLiteral[i]) << endl;
+        removeVariable(abs(variablesWithOneLiteral[i]));
     }
     
     for(int unsigned i = 0; i < formula.size(); i++){
