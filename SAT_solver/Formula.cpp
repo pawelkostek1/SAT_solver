@@ -64,7 +64,7 @@ int Formula::getNumOfClauses() {
 	return this->numOfClauses;
 }
 
-int Formula::assignVariable(int literal, int value,int level,vector<Variable> parentVariables) {
+int Formula::assignVariable(int literal, int value, int level, vector<Variable> parentVariables) {
     //if the variable already has a value that is not -1 and does not match the value
     //we want to assign there is a conflict 
     
@@ -77,8 +77,9 @@ int Formula::assignVariable(int literal, int value,int level,vector<Variable> pa
     
     //cout << "assigning value to variable: "<< literal << ", " << variables[literal].value << endl;
     //Add the
-    implicationGraph.addNode(literal,level,parentVariables);
+    implicationGraph.addNode(literal,level, value, parentVariables);
     if (variables[literal].value != value and variables[literal].value != -1){
+		implicationGraph.ConflictingLiteralId = literal;
         return CONFLICT;
     }else{
         return NOCONFLICT;

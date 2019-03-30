@@ -1,9 +1,10 @@
 #include"Node.h"
 #include"constants.h"
 
-Node::Node(int _id, int _literalId,int _level) {
+Node::Node(int _id, int _literalId, int _value, int _level) {
     id = _id;
     literalId = _literalId;
+	value = _value;
     level = _level;
 }
 

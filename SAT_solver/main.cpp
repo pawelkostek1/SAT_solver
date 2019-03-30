@@ -201,7 +201,12 @@ int ConflictAnalysis(Formula &phi) {
 
 		We also need to consider the case where the conflict can no longer be resolved, in which case we return UNSAT.
 	*/
-	phi.implicationGraph.
+	vector<int> conflictingNodeIndeces = phi.implicationGraph.variableIndex[phi.implicationGraph.ConflictingLiteralId];
+	vector<int> conflictingNodeIndecesPos;
+	vector<int> conflictingNodeIndecesNeg;
+	for (int i = 0; i < conflictingNodeIndeces.size(); i++) {
+		phi.implicationGraph.nodes[conflictingNodeIndeces[i]].;
+	}
     
 		return level;
 }

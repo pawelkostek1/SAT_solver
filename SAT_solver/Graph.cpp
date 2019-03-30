@@ -11,9 +11,9 @@ Graph::~Graph()
 {
 }
 
-int Graph::addNode(int literal,int level,vector<Variable> parentVariables) {
+int Graph::addNode(int literal, int level, int value, vector<Variable> parentVariables) {
     int id = int(nodes.size());
-    nodes[id] = (Node(id,literal,level));
+    nodes[id] = (Node(id,literal,value,level));
     if(levelIndex.find(level) != levelIndex.end()){
         levelIndex[level] = vector<int>();
     }
