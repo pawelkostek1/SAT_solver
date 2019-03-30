@@ -132,16 +132,18 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
     }
     vector<Variable> vars = vector<Variable>();
     vars.push_back(branchVar);
-    
+
     while(!phi.allVariablesAssigned() and vars.size() > 0){
         //we need assign the
         Variable var = vars.front();
         vars.erase(vars.begin(), vars.begin()+1);
+        
         vector<int> varClauses = phi.clausesIndexes[var.literal];
         for (unsigned int i = 0; i < varClauses.size(); i++) {
             //Go through each clause and check if we can infer a variable or not
             ImplicationAnalysis result = phi.setInferredVariable(varClauses[i]);
             if (result.target.literal != 0){
+                //
                 int implicationAssignmentResult = phi.assignVariable(result.target.literal, result.target.value, level, result.parents);
                 if(implicationAssignmentResult == CONFLICT){
                     return CONFLICT;
@@ -152,7 +154,6 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
             
         }
     }
-    
     return NOCONFLICT;
 }
 
@@ -240,12 +241,16 @@ int CDCL(Formula phi) {
 	if (UnitPropagation(phi,Variable(0,-1),dl) == CONFLICT) {
 		return UNSAT;
 	}
-	while (!phi.allVariablesAssigned()) {
-        phi.printFormula();
+	/*while (!phi.allVariablesAssigned()) {
+        for (auto& it : phi.unassignedIndex)
+            cout << it << endl;
 		Variable branchVar = PickBranchingVariable(phi);
         cout << "Picking A Branching variable: " << branchVar.literal << " value: " << branchVar.value << endl;
+        phi.printFormula();
+        phi.printIndex();
 		dl++;
 		if (UnitPropagation(phi, branchVar,dl) == CONFLICT) {
+            cout << "CONFLICT WAS DETECTED" << endl;
 			int beta = ConflictAnalysis(phi);
 			if (beta < 0) {
 				return UNSAT;
@@ -255,7 +260,9 @@ int CDCL(Formula phi) {
 				dl = beta;
 			}
 		}
-	}
+	}*/
+    phi.printFormula();
+    phi.printIndex();
 	return SAT;
 }
 
