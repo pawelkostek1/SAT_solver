@@ -14,10 +14,11 @@ class Graph {
 
 public:
     unordered_map<int,Node> nodes;
-    vector<vector<int>> levelIndex;
+    unordered_map<int,vector<int>> variableIndex;
+    unordered_map<int,vector<int>> levelIndex;
 	Graph(); //Constructor
 	~Graph();
 	int addNode(int absLiteral,int level);
-
+    void setNodeParent(list<Variable> variables)
 };
 
