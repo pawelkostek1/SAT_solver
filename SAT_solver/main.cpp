@@ -9,6 +9,8 @@
 #include"Formula.h"
 #include"Graph.h"
 #include"constants.h"
+#include"Change.h"
+#include"Clause.h"
 using namespace std;
 
 
@@ -18,7 +20,7 @@ Formula LoadFormula();
 void printAnswer(int ans);
 int UnitPropagation(Formula &phi, tuple<int, int> branchVar);
 int AllVariablesAssigned(Formula &phi);
-tuple<int,int> PickBranchingVariable(Formula phi);
+Variable PickBranchingVariable(Formula phi);
 int ConflictAnalysis(Formula &phi);
 int Backtrack(Formula &phi, int &beta);
 int CDCL(Formula phi);
@@ -26,7 +28,7 @@ int CDCL(Formula phi);
 
 
 int main() {
-
+    
 	//Read the encoded Enstein's puzzle into variable phi
 	Formula phi = LoadFormula();
     phi.printFormula();
@@ -74,14 +76,14 @@ Formula LoadFormula() {
 		}
 	}
 	//Read the rest of the file containing encoded formula
-	vector<vector<int> > phi = vector<vector<int> >();
+	vector<Clause> phi = vector<Clause>();
 	int i = 0;
 	while (File) {
 		int temp = 1;
 		File >> temp;
-        phi.push_back(vector<int>());
+        phi.push_back(Clause());
 		while (temp) {
-			phi[i].push_back(temp);
+			phi[i].literals.push_back(temp);
 			File >> temp;
 		}
 		/*
@@ -127,31 +129,34 @@ void printAnswer(int ans) {
 * @ret:
 */
 
-int UnitPropagation(Formula &phi, tuple<int,int> branchVar) {
+int UnitPropagation(Formula &phi, Variable branchVar,int level) {
     //Start by assigning the branchVar to the assignedVariables in phi
-	if (get<0>(branchVar) == 0) { //Base case
+	if (branchVar.literal == 0) { //Base case
 		//if we end up in here it means this is the first time we run this function
         cout << "Lets start by removing all single literal clauses" << endl;
         return phi.removeSingleLiteralVariables();
 	}
 	else { //there exist some assigned variables
-        phi.assignVariable(get<0>(branchVar), get<1>(branchVar),false);
-        vector<int> assignementClauses = phi.clausesIndexes[get<0>(branchVar)];
-        list<tuple<int,int>> inferedList = list<tuple<int,int>>();
-		for (unsigned int i = 0; i < assignementClauses.size(); i++) {
+        int assignmentResult = phi.assignVariable(branchVar.literal,branchVar.value,level);
+        if (assignmentResult == CONFLICT){
+            return CONFLICT;
+        }
+        vector<int> literalClauses = phi.clausesIndexes[branchVar.literal];
+        for (unsigned int i = 0; i < literalClauses.size(); i++) {
             //Go through each clause and check if we can infer a variable or not
-			
-			tuple<int,int> inferedVar = phi.getInfered(assignementClauses[i]);
-            if (get<0>(inferedVar) != 0){
+            Variable inferredVar = phi.getInferred(literalClauses[i]);
+                
+            if (inferredVar.literal != 0){
                 //this method will assign the variable to the assignmend hasmap as well as update the
                 //implication graph
-                phi.assignVariable(get<0>(inferedVar), get<1>(inferedVar),true);
+                int result = UnitPropagation(phi,inferredVar,level);
+                if (result == CONFLICT){
+                    return CONFLICT;
+                }
             }
-			
-			
-		}
-	}
-    return CONFLICT;
+        }
+    }
+    return NOCONFLICT;
 }
 
 /******************************************************
@@ -171,10 +176,10 @@ int AllVariablesAssigned(Formula &phi) {
  * @paramsphi phi(Formula) -
 * @ret:
 */
-tuple<int,int> PickBranchingVariable(Formula phi) {
+Variable PickBranchingVariable(Formula phi) {
 	//TODO
     int absLiteral = *next(phi.unassignedIndex.begin(), rand() % phi.unassignedIndex.size());
-    return tuple<int,int>(absLiteral,rand() % 1);
+    return Variable(absLiteral,rand() % 2);
 }
 
 /******************************************************
@@ -209,15 +214,15 @@ int Backtrack(Formula &phi, int &beta) {
 */
 int CDCL(Formula phi) {
     int dl = 0;
-	if (UnitPropagation(phi,tuple<int,int>(0,-1)) == CONFLICT) {
+	if (UnitPropagation(phi,Variable(0,-1),dl) == CONFLICT) {
 		return UNSAT;
 	}
 	while (!phi.allVariablesAssigned()) {
         phi.printFormula();
-		tuple<int,int> branchVar = PickBranchingVariable(phi);
-        cout << "Picking A Branching variable: " << get<0>(branchVar) << " value: " << get<1>(branchVar) << endl;
+		Variable branchVar = PickBranchingVariable(phi);
+        cout << "Picking A Branching variable: " << branchVar.literal << " value: " << branchVar.value << endl;
 		dl++;
-		if (UnitPropagation(phi, branchVar) == CONFLICT) {
+		if (UnitPropagation(phi, branchVar,dl) == CONFLICT) {
 			int beta = ConflictAnalysis(phi); //Where do I declare beta? Here?
 			if (beta < 0) {
 				return UNSAT;
@@ -230,6 +235,8 @@ int CDCL(Formula phi) {
 	}
 	return SAT;
 }
+
+
 
 /******************************************************
 * @description:

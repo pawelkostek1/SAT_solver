@@ -4,14 +4,14 @@
 #include<algorithm>
 using namespace std;
 
-Formula::Formula(int _numOfvar, int _numOfClauses, vector< vector<int>> _formula)
+Formula::Formula(int _numOfvar, int _numOfClauses, vector<Clause> _formula)
 {
 
 	this->numOfClauses = _numOfClauses;
 	formula = _formula;
-    variables = unordered_map<int, Variable>();
+    
 	//Can optimize later by sorting it while the clauses are added to the formula
-    sort(formula.begin(), formula.end(), [](const vector<int> & a, const vector<int> & b){ return a.size() < b.size(); });
+    sort(formula.begin(), formula.end(), [](const Clause & a, const Clause & b){ return a.literals.size() < b.literals.size(); });
     
     for (int i = 1; i <= _numOfvar; i++) {
         cout << "adding var: " << i << endl;
@@ -39,17 +39,16 @@ void Formula::removeVariable(int absLiteral){
     assignedIndex.remove(absLiteral);
     clausesIndexes.erase(absLiteral);
     numOfvar--;
-    
 }
 
 
 void Formula::index(int absLiteral){
     for (int i = 0; i < getNumOfClauses(); i++) {
-        auto itPos = find(formula[i].begin(), formula[i].end(), absLiteral);
-        auto itNeg = find(formula[i].begin(), formula[i].end(), absLiteral*-1);
-        if (itPos != formula[i].end() or itNeg != formula[i].end()) {
+        auto itPos = find(formula[i].literals.begin(), formula[i].literals.end(), absLiteral);
+        auto itNeg = find(formula[i].literals.begin(), formula[i].literals.end(), absLiteral*-1);
+        if (itPos != formula[i].literals.end() or itNeg != formula[i].literals.end()) {
             //i represents the unique id for a clause
-            if (formula[i].size() == 1){
+            if (formula[i].literals.size() == 1){
                 //this is to help optmization faster find the clauses with only one literal
                 //cout << "Single literal clause: " << formula[i][0] << " " << i << endl;
                 clausesIndexes[absLiteral].insert(clausesIndexes[absLiteral].begin(),i);
@@ -60,6 +59,7 @@ void Formula::index(int absLiteral){
     }
 }
 
+
 int Formula::getNumOfVar() {
 	return this->numOfvar;
 }
@@ -68,11 +68,21 @@ int Formula::getNumOfClauses() {
 	return this->numOfClauses;
 }
 
-void Formula::assignVariable(int literal, int value,bool implicated) {
-	unassignedIndex.remove(literal);
-	assignedIndex.push_back(literal);
-
-	variables[literal].value = value;
+int Formula::assignVariable(int literal, int value,int level) {
+    //if the variable already has a value that is not -1 and does not match the value
+    //we want to assign there is a conflict 
+    if (variables[literal].value != value and variables[literal].value != -1){
+        return CONFLICT;
+    }
+    //variable has not been assigned a value yet or its the same value at a different level
+    if(variables[literal].value == -1){
+        unassignedIndex.remove(literal);
+        assignedIndex.push_back(literal);
+        variables[literal].value = value;
+    }
+    //Add the
+    implicationGraph.addNode(literal,level);
+    return NOCONFLICT;
 }
 
 void Formula::unassignVariable(int literal) {
@@ -85,37 +95,53 @@ bool Formula::allVariablesAssigned(){
     return this->numOfvar == assignedIndex.size();
 }
 
-tuple<int,int> Formula::getInfered(int clauseIndex) {
-    vector<int> clause = formula[clauseIndex];
-    int literalCount = int(clause.size());
+
+
+
+
+
+Variable Formula::getInferred(int clauseIndex){
     int unassignedCount = 0;
-    tuple<int,int> inferedVar = tuple<int,int>(0,-1);
-    for (int i = 1; i <= literalCount; i++){
-        int literal = clause[i];
-        int absLiteral = variables[absLiteral].literal;
-        int value = variables[absLiteral].value;
+    Clause clause = formula[clauseIndex];
+    Variable inferredVar = Variable(0,-1);
+    for (int i = 1; i <= clause.literals.size(); i++){
+        int literal = clause.literals[i];
+        int literalId = abs(literal);
+        Variable var = variables[literalId];
+        bool positive = literal > 0;
         //The intuition here is that if any literal value in the cluse is true we cannot infer any other variable
-        if ((literal < 0 and value == 0) or (literal > 0 and value == 1)){
+        if ((!positive and var.value == 0) or (positive and var.value == 1)){
             break;
-        }else if (value == -1){
+        }else if (var.value == -1){
             //the variable is unnassigned
             unassignedCount+=1;
-            //If the number of literals that are unassigned in the clause is more than 1 we cannot infer shit
+            //If the number of literals that are unassigned in the literals is more than 1 we cannot infer shit
             if (unassignedCount > 1){
                 break;
             }else{
-                //since this line only can run once and if the algorithm goes through all clause
+                //since this line only can run once and if the algorithm goes through all literals
                 //variables and only finds one unassigned variable that variable will be stored in
                 //the inferedVar variable.
-                get<0>(inferedVar) = absLiteral;
+                inferredVar.literal = literalId;
                 //To make sure we infer the right value we check to see if the literal is negated or not
-                //if negated the value is set to -1 else it is set to 1
-                get<1>(inferedVar) = literal > 0 ? 1:-1;
+                //if negated the value is set to 0 else it is set to 1
+                inferredVar.value = positive ? 1:0;
             }
         }
     }
-    return inferedVar;
+    return inferredVar;
 }
+
+
+
+
+
+
+
+
+
+
+
 
 int Formula::removeSingleLiteralVariables(){
     cout << "hello";
@@ -127,7 +153,7 @@ int Formula::removeSingleLiteralVariables(){
     while(approvedClauses < formula.size()){
         //if a clause has one literal add it to the variablesWithOneLiteral vector
         printFormula();
-        vector<int> clause = formula[i];
+        vector<int> clause = formula[i].literals;
         cout << "Checking clause: " << i << endl;
         if(clause.size() == 1){
             //Check weather this literal already has a single literal of the complimentary sort
@@ -201,7 +227,7 @@ int Formula::removeSingleLiteralVariables(){
     }
     
     for(int unsigned i = 0; i < formula.size(); i++){
-        vector<int> clause = formula[i];
+        vector<int> clause = formula[i].literals;
         cout << "ClauseId: " << i << endl;
         for(int unsigned j = 0; j < clause.size(); j++){
             cout << "\tLiteral: " << clause[j] << endl;
@@ -215,17 +241,16 @@ int Formula::removeSingleLiteralVariables(){
 
 void Formula::printFormula() {
     cout << "Number of variables is " << getNumOfVar() << ".\nNumber of clauses is " << getNumOfClauses() << "." << endl  << endl;
-
     for (int i = 0; i < getNumOfClauses(); i++) {
         cout << "Clause " << i + 1 << ": ";
-        for (unsigned int j = 0; j < formula[i].size(); j++) {
-            if (formula[i][j] < 0) {
-                cout << "NOT " << variables[abs(formula[i][j])].letter;
+        for (unsigned int j = 0; j < formula[i].literals.size(); j++) {
+            if (formula[i].literals[j] < 0) {
+                cout << "NOT " << variables[abs(formula[i].literals[j])].letter;
             }
             else {
-                cout << variables[abs(formula[i][j])].letter;
+                cout << variables[abs(formula[i].literals[j])].letter;
             }
-            if (j < formula[i].size() - 1) {
+            if (j < formula[i].literals.size() - 1) {
                 cout << " OR ";
             }
         }

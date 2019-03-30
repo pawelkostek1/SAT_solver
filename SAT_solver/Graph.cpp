@@ -1,5 +1,6 @@
 #include "Graph.h"
 #include "constants.h"
+#include"Node.h"
 Graph::Graph() {
 	
 }
@@ -8,8 +9,10 @@ Graph::~Graph()
 {
 }
 
-void Graph::addNode(list<Node> parentNodes,int literal,bool implication) {
-    
+int Graph::addNode(int literal,int level) {
+    int id = int(nodes.size());
+    nodes[literal] = (Node(id,literal,level));
+    return id;
 }
 
 
