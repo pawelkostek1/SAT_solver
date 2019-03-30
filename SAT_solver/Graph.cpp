@@ -2,6 +2,7 @@
 #include "constants.h"
 #include"Node.h"
 #include<vector>
+
 Graph::Graph() {
 	
 }
