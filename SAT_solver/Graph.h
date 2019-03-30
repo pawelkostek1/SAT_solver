@@ -24,6 +24,7 @@ public:
 	int addNode(int literal, int level, int value, vector<Variable> parentVariables);
     void setNodeParents(int nodeId,vector<Variable> parentVariables);
     void removeNodesByLiteralId(int literalId);
+	int backtrackToLowestLevelParent(int parentId, int maxLevel);
     void printGraph();
 };
 

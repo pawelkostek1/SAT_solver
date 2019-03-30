@@ -17,7 +17,7 @@ Formula LoadFormula();
 void printAnswer(int ans);
 int UnitPropagation(Formula &phi, Variable branchVar,int level);
 Variable PickBranchingVariable(Formula phi);
-int ConflictAnalysis(Formula &phi);
+int ConflictAnalysis(Formula &phi, int dl);
 void Backtrack(Formula &phi, int beta);
 int CDCL(Formula phi);
 
@@ -186,29 +186,78 @@ Variable PickBranchingVariable(Formula phi) {
  * @params phi(Formula) -
 * @ret:
 */
-int ConflictAnalysis(Formula &phi) {
-	
-	int level = 0;
+int ConflictAnalysis(Formula &phi, int dl) {
+
+	int level = dl;
 
 	//Perform decay of the activities
 	phi.decayActivities();
 
 	//Learn the clause
 	/*
-		You use the graph to go back to all the closest parents of the conflict, this gives you a learned clause.
-		You add the clause to the formula and then you use the graph to find the level before the one that corresponds to the earliest root 
-		that resulted in the conflict.
+	You use the graph to go back to all the closest parents of the conflict, this gives you a learned clause.
+	You add the clause to the formula and then you use the graph to find the level before the one that corresponds to the earliest root
+	that resulted in the conflict.
 
-		We also need to consider the case where the conflict can no longer be resolved, in which case we return UNSAT.
+	We also need to consider the case where the conflict can no longer be resolved, in which case we return UNSAT.
 	*/
 	vector<int> conflictingNodeIndeces = phi.implicationGraph.variableIndex[phi.implicationGraph.ConflictingLiteralId];
 	vector<int> conflictingNodeIndecesPos;
 	vector<int> conflictingNodeIndecesNeg;
 	for (int i = 0; i < conflictingNodeIndeces.size(); i++) {
-		phi.implicationGraph.nodes[conflictingNodeIndeces[i]].;
+		if (phi.implicationGraph.nodes[conflictingNodeIndeces[i]].value == 1)
+			conflictingNodeIndecesPos.push_back(conflictingNodeIndeces[i]);
+		else
+			conflictingNodeIndecesNeg.push_back(conflictingNodeIndeces[i]);
 	}
-    
-		return level;
+	//Go through all the combinations of pairs of conflicted nodes
+	//For each pair concatenate the parents of the nodes to form a new clause
+	//Add the learned clause to the original formula
+	//!!!Currently not checking for reapeted literals
+	int lowestLevelParentNodeId;
+	for (int i = 0; i < conflictingNodeIndecesPos.size(); i++) {
+		for (int j = 0; j < conflictingNodeIndecesNeg.size(); j++) {
+			vector<int> clause;
+			list<int> parentPos = phi.implicationGraph.nodes[conflictingNodeIndecesPos[i]].parentNodes;
+			list<int> parentNeg = phi.implicationGraph.nodes[conflictingNodeIndecesNeg[j]].parentNodes;
+			for (auto const& parent : parentPos) {
+				int parentId = phi.implicationGraph.nodes[parent].id;
+				int parentLiteralId = phi.implicationGraph.nodes[parent].literalId;
+				int parentValue = phi.implicationGraph.nodes[parent].value;
+				int parentLevel = phi.implicationGraph.nodes[parent].value;
+				if (parentValue)
+					clause.push_back(parentLiteralId);
+				else
+					clause.push_back(-parentLiteralId);
+
+				//Overwrite the parent with the lowest level found
+				if (level > parentLevel) {
+					level = parentLevel;
+					lowestLevelParentNodeId = parentId;
+				}
+			}
+			for (auto const& parent : parentNeg) {
+				int parentId = phi.implicationGraph.nodes[parent].id;
+				int parentLiteralId = phi.implicationGraph.nodes[parent].literalId;
+				int parentValue = phi.implicationGraph.nodes[parent].value;
+				int parentLevel = phi.implicationGraph.nodes[parent].value;
+				if (parentValue)
+					clause.push_back(parentLiteralId);
+				else
+					clause.push_back(-parentLiteralId);
+
+				//Overwrite the parent with the lowest level found
+				if (level > parentLevel) {
+					level = parentLevel;
+					lowestLevelParentNodeId = parentId;
+				}
+			}
+			phi.formula.push_back(Clause(clause));
+		}
+	}
+
+	level = phi.implicationGraph.backtrackToLowestLevelParent(lowestLevelParentNodeId, dl);
+	return level - 1; //return one level below of the corresponding lowest level root node
 }
 
 /******************************************************
@@ -254,7 +303,7 @@ int CDCL(Formula phi) {
 		dl++;
 		if (UnitPropagation(phi, branchVar,dl) == CONFLICT) {
             cout << "CONFLICT WAS DETECTED" << endl;
-			int beta = ConflictAnalysis(phi);
+			int beta = ConflictAnalysis(phi, dl);
 			if (beta < 0) {
 				return UNSAT;
 			}

@@ -41,7 +41,6 @@ void Graph::setNodeParents(int nodeId,vector<Variable> parentVariables){
     }
 }
 
-
 void Graph::removeNodesByLiteralId(int literalId){
     for (int i =0; i < variableIndex[literalId].size(); i++){
         int nodeId = variableIndex[literalId][i];
@@ -50,6 +49,24 @@ void Graph::removeNodesByLiteralId(int literalId){
     }
     //reset the variable-node Index since we removed all nodes they point to
     variableIndex[literalId] = vector<int>();
+}
+
+int Graph::backtrackToLowestLevelParent(int parentId, int maxLevel) {
+	int level = maxLevel;
+	int lowestLevelParentId = parentId;
+	list<int> listOfParents = nodes[parentId].parentNodes;
+	//Backtrack to the parent with the lowest level
+	//Runs until the list of parents is empty - the root node was reached
+	while (listOfParents.size != 0) {
+		for (auto const& parent : listOfParents) {
+			if (nodes[parent].level < level) {
+				level = nodes[parent].level;
+				lowestLevelParentId = nodes[parent].id;
+			}
+		}
+		listOfParents = nodes[lowestLevelParentId].parentNodes;
+	}
+	return level;
 }
 
 void Graph::printGraph(){
