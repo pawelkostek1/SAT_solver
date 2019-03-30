@@ -1,6 +1,7 @@
 #pragma once
 #include<list>
 #include<tuple>
+#include"Variable.h"
 using namespace std;
 
 
