@@ -1,5 +1,5 @@
-#include "Graph.h"
-#include "constants.h"
+#include"Graph.h"
+#include"constants.h"
 #include"Node.h"
 #include<vector>
 
@@ -21,6 +21,7 @@ int Graph::addNode(int literal,int level,vector<Variable> parentVariables) {
         variableIndex[literal] = vector<int>();
     }
     levelIndex[level].push_back(literal);
+    
     variableIndex[literal].push_back(id);
     setNodeParents(id,parentVariables);
     return id;
@@ -41,6 +42,18 @@ void Graph::setNodeParents(int nodeId,vector<Variable> parentVariables){
         
     }
 }
+
+
+void Graph::removeNodesByLiteralId(int literalId){
+    for (int i =0; i < variableIndex[literalId].size(); i++){
+        int nodeId = variableIndex[literalId][i];
+        nodes.erase(nodeId);
+        
+    }
+    //reset the variable-node Index since we removed all nodes they point to
+    variableIndex[literalId] = vector<int>();
+}
+
 
 
 

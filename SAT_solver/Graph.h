@@ -19,7 +19,7 @@ public:
 	Graph(); //Constructor
 	~Graph();
 	int addNode(int literal,int level,vector<Variable> parentVariables);
-    
     void setNodeParents(int nodeId,vector<Variable> parentVariables);
+    void removeNodesByLiteralId(int literalId);
 };
 

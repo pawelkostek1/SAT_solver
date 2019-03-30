@@ -1,7 +1,6 @@
 #include"Formula.h"
 #include"constants.h"
 #include<map>
-
 #include<algorithm>
 using namespace std;
 
@@ -22,7 +21,6 @@ Formula::Formula(int _numOfvar, int _numOfClauses, vector<Clause> _formula)
     implicationGraph = Graph();
 }
 
-
 Formula::~Formula()
 {
 }
@@ -34,7 +32,6 @@ void Formula::addVariable(int absLiteral,int value){
     numOfvar++;
 }
 
-
 void Formula::removeVariable(int absLiteral){
     variables.erase(absLiteral);
     unassignedIndex.remove(absLiteral);
@@ -42,7 +39,6 @@ void Formula::removeVariable(int absLiteral){
     clausesIndexes.erase(absLiteral);
     numOfvar--;
 }
-
 
 void Formula::index(int absLiteral){
     for (int i = 0; i < getNumOfClauses(); i++) {
@@ -60,7 +56,6 @@ void Formula::index(int absLiteral){
         }
     }
 }
-
 
 int Formula::getNumOfVar() {
 	return this->numOfvar;
@@ -83,6 +78,8 @@ int Formula::assignVariable(int literal, int value,int level,vector<Variable> pa
         assignedIndex.push_back(literal);
         variables[literal].value = value;
     }
+    
+    //cout << "assigning value to variable: "<< literal << ", " << variables[literal].value << endl;
     //Add the
     implicationGraph.addNode(literal,level,parentVariables);
     return NOCONFLICT;
@@ -97,8 +94,6 @@ void Formula::unassignVariable(int literal) {
 bool Formula::allVariablesAssigned(){
     return this->numOfvar == assignedIndex.size();
 }
-
-
 
 ImplicationAnalysis Formula::setInferredVariable(int clauseIndex){
     Clause clause = formula[clauseIndex];
@@ -138,17 +133,6 @@ ImplicationAnalysis Formula::setInferredVariable(int clauseIndex){
     result.parents = parentVars;
     return result;
 }
-
-
-
-
-
-
-
-
-
-
-
 
 int Formula::removeSingleLiteralVariables(){
     cout << "hello";
@@ -241,8 +225,6 @@ int Formula::removeSingleLiteralVariables(){
     return NOCONFLICT;
 }
 
-
-
 void Formula::printFormula() {
     cout << "Number of variables is " << getNumOfVar() << ".\nNumber of clauses is " << getNumOfClauses() << "." << endl  << endl;
     for (int i = 0; i < getNumOfClauses(); i++) {
@@ -254,6 +236,7 @@ void Formula::printFormula() {
             else {
                 cout << variables[abs(formula[i].literals[j])].letter;
             }
+            cout << "(" << variables[abs(formula[i].literals[j])].value<< ")";
             if (j < formula[i].literals.size() - 1) {
                 cout << " OR ";
             }

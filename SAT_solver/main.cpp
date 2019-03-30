@@ -12,8 +12,6 @@
 #include"Clause.h"
 using namespace std;
 
-
-
 //Declare functions
 Formula LoadFormula();
 void printAnswer(int ans);
@@ -22,8 +20,6 @@ Variable PickBranchingVariable(Formula phi);
 int ConflictAnalysis(Formula &phi);
 void Backtrack(Formula &phi, int beta);
 int CDCL(Formula phi);
-//int DPLL(Formula phi, int decision, int level);
-
 
 int main() {
     
@@ -102,8 +98,6 @@ Formula LoadFormula() {
 }
 
 
-
-
 /******************************************************
 * @description:
 *
@@ -126,7 +120,6 @@ void printAnswer(int ans) {
 * @params: phi(Formula) -
 * @ret:
 */
-
 int UnitPropagation(Formula &phi, Variable branchVar,int level) {
 
     
@@ -149,7 +142,10 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
             //Go through each clause and check if we can infer a variable or not
             ImplicationAnalysis result = phi.setInferredVariable(varClauses[i]);
             if (result.target.literal != 0){
-                phi.assignVariable(result.target.literal, result.target.value, level, result.parents);
+                int implicationAssignmentResult = phi.assignVariable(result.target.literal, result.target.value, level, result.parents);
+                if(implicationAssignmentResult == CONFLICT){
+                    return CONFLICT;
+                }
                 vars.push_back(result.target);
             }
             
@@ -167,18 +163,20 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
 * @ret:
 */
 Variable PickBranchingVariable(Formula phi) {
-
+    
     //int absLiteral = *next(phi.unassignedIndex.begin(), rand() % phi.unassignedIndex.size());
     //return Variable(absLiteral,rand() % 1);
-
-	float highestActivity = 0.0;
+    
+    float highestActivity = -1.0; //you have to init this to under 0.0 since your activity scores in each var is 0.0
+    
 	int brachingVar = -1;
 	//Use Variable State Independent Decaying Sum (VSIDS) to pick branching varible
-	for (auto& it : phi.variables) {
-		float currentActivity = it.second.activity;
+    //important branch only on variables not already assigned
+	for (auto& it : phi.unassignedIndex) {
+		float currentActivity = phi.variables[it].activity;
 		if (highestActivity < currentActivity) {
 			highestActivity = currentActivity;
-			brachingVar = it.first;
+			brachingVar = it;
 		}
 	}
 	return Variable(brachingVar, rand() % 2); //Not sure how do you decide which value to set??? Currently, it is assigned randomly.
@@ -220,9 +218,13 @@ void Backtrack(Formula &phi, int beta) {
 	   Using beta that is the level we want to back track to we use the aformentioned data structure to 
 	   unassign all the variables that were set up until the given level beta.
 	*/
-	for (int i = phi.implicationGraph.levelIndex.size() - 1; i > beta; i--) {
-		for (unsigned int j = 0; j < phi.implicationGraph.levelIndex[i].size(); j++) {
-			phi.unassignVariable(phi.implicationGraph.levelIndex[i][j]);
+	int initialSize = phi.implicationGraph.levelIndex.size() - 1;
+	for (int i = initialSize; i > beta; i--) {
+		vector<int> levelIndexList = phi.implicationGraph.levelIndex[i];
+		phi.implicationGraph.levelIndex.erase(i);
+		for (unsigned int j = 0; j < levelIndexList.size(); j++) {
+			phi.unassignVariable(levelIndexList[j]);
+			phi.implicationGraph.removeNodesByLiteralId(levelIndexList[j]);
 		}
 	}
 }
