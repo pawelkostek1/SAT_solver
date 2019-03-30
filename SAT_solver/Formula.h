@@ -4,7 +4,6 @@
 #include<list>
 #include<unordered_map>
 #include"Graph.h"
-#include"Variable.h"
 #include"Change.h"
 #include"Clause.h"
 //Intially read the data into array of vectors, we may want to consider implementing our custom object for stroing formula...Formula

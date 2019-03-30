@@ -19,6 +19,6 @@ public:
 	Graph(); //Constructor
 	~Graph();
 	int addNode(int absLiteral,int level);
-    void setNodeParent(list<Variable> variables)
+	void setNodeParent(list<Variable> variables);
 };
 
