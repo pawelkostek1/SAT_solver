@@ -32,6 +32,7 @@ public:
     int removeSingleLiteralVariables();
     void index(int absLiteral);
     void printFormula();
+    void printIndex();
     void addVariable(int absLiteral,int value);
     void removeVariable(int absLiteral);
 

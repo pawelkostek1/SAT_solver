@@ -67,9 +67,7 @@ int Formula::getNumOfClauses() {
 int Formula::assignVariable(int literal, int value,int level,vector<Variable> parentVariables) {
     //if the variable already has a value that is not -1 and does not match the value
     //we want to assign there is a conflict 
-    if (variables[literal].value != value and variables[literal].value != -1){
-        return CONFLICT;
-    }
+    
     //variable has not been assigned a value yet or its the same value at a different level
     if(variables[literal].value == -1){
         unassignedIndex.remove(literal);
@@ -80,7 +78,12 @@ int Formula::assignVariable(int literal, int value,int level,vector<Variable> pa
     //cout << "assigning value to variable: "<< literal << ", " << variables[literal].value << endl;
     //Add the
     implicationGraph.addNode(literal,level,parentVariables);
-    return NOCONFLICT;
+    if (variables[literal].value != value and variables[literal].value != -1){
+        return CONFLICT;
+    }else{
+        return NOCONFLICT;
+    }
+    
 }
 
 void Formula::unassignVariable(int literal) {
@@ -224,7 +227,7 @@ int Formula::removeSingleLiteralVariables(){
 }
 
 void Formula::printFormula() {
-    cout << "Number of variables is " << getNumOfVar() << ".\nNumber of clauses is " << getNumOfClauses() << "." << endl  << endl;
+    //cout << "Number of variables is " << getNumOfVar() << ".\nNumber of clauses is " << getNumOfClauses() << "." << endl  << endl;
     for (int i = 0; i < getNumOfClauses(); i++) {
         cout << "Clause " << i + 1 << ": ";
         for (unsigned int j = 0; j < formula[i].literals.size(); j++) {
@@ -242,6 +245,14 @@ void Formula::printFormula() {
         cout << endl;
     }
     cout << endl;
+}
+void Formula::printIndex(){
+    cout << "UNASSIGNED INDEX" << endl;
+    for (auto& it : unassignedIndex)
+        cout << it << endl;
+    cout << "ASSIGNED INDEX" << endl;
+    for (auto& it : assignedIndex)
+        cout << it << endl;
 }
 
 void Formula::bumpActivities(vector<int> learnedClauseVars) {
