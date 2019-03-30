@@ -69,6 +69,7 @@ int Formula::getNumOfClauses() {
 	return this->numOfClauses;
 }
 
+
 int Formula::assignVariable(int literal, int value,int level) {
     //if the variable already has a value that is not -1 and does not match the value
     //we want to assign there is a conflict 

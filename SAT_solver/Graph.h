@@ -3,6 +3,8 @@
 #include<tuple>
 #include"Node.h"
 #include<unordered_map>
+
+#include<vector>
 using namespace std;
 
 /*
@@ -12,7 +14,7 @@ class Graph {
 
 public:
     unordered_map<int,Node> nodes;
-    unordered_map<int,int> levelIndex;
+    vector<vector<int>> levelIndex;
 	Graph(); //Constructor
 	~Graph();
 	int addNode(int absLiteral,int level);

@@ -134,6 +134,9 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
         if (assignmentResult == CONFLICT){
             return CONFLICT;
         }
+    if (branchVar.literal == 0){
+        return phi.removeSingleLiteralVariables();
+    }
         vector<int> literalClauses = phi.clausesIndexes[branchVar.literal];
         for (unsigned int i = 0; i < literalClauses.size(); i++) {
             //Go through each clause and check if we can infer a variable or not
