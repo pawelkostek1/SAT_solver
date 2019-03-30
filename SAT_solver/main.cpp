@@ -14,26 +14,25 @@ using namespace std;
 
 //Declare functions
 Formula LoadFormula();
-void printAnswer(int ans);
+void printAnswer(Formula &phi, int ans);
 int UnitPropagation(Formula &phi, Variable branchVar,int level);
-Variable PickBranchingVariable(Formula phi);
+Variable PickBranchingVariable(Formula &phi);
 int ConflictAnalysis(Formula &phi, int dl);
 void Backtrack(Formula &phi, int beta);
-int CDCL(Formula phi);
+int CDCL(Formula &phi);
 
 int main() {
     
 	//Read the encoded Enstein's puzzle into variable phi
 	Formula phi = LoadFormula();
-    phi.printFormula();
-    
-	//phi.assignVariable(2,1,false);
+
+	printAnswer(phi, SAT);
 	
 	//Solve the puzzle
 	int ans = CDCL(phi);
 
 	//Print the answer
-	printAnswer(ans);
+	printAnswer(phi, ans);
 
 	while (1);
 	return 0;
@@ -103,7 +102,7 @@ Formula LoadFormula() {
 *
  * @params ans(int) -
 */
-void printAnswer(int ans) {
+void printAnswer(Formula &phi, int ans) {
 	cout << "The solver produced following output: ";
 	if (ans == SAT) {
 		cout << "SAT" << endl;
@@ -111,7 +110,11 @@ void printAnswer(int ans) {
 	else if (ans == UNSAT) {
 		cout << "UNSAT" << endl;
 	}
-	//TODO
+	cout << "The following assignments were found:"<<endl;
+	for (auto& it: phi.variables) {
+		cout << it.second.letter << "(" << it.second.value << ") ";
+	}
+	cout << endl << phi.variables.size();
 }
 
 /******************************************************
@@ -157,10 +160,10 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
 /******************************************************
 * @description:
 *
- * @params phi(Formula) -
+* @params phi(Formula) -
 * @ret:
 */
-Variable PickBranchingVariable(Formula phi) {
+Variable PickBranchingVariable(Formula &phi) {
     
     //int absLiteral = *next(phi.unassignedIndex.begin(), rand() % phi.unassignedIndex.size());
     //return Variable(absLiteral,rand() % 1);
@@ -183,7 +186,7 @@ Variable PickBranchingVariable(Formula phi) {
 /******************************************************
 * @description:
 *
- * @params phi(Formula) -
+* @params phi(Formula) -
 * @ret:
 */
 int ConflictAnalysis(Formula &phi, int dl) {
@@ -288,18 +291,16 @@ void Backtrack(Formula &phi, int beta) {
 * @params phi(Formula) -
 * @ret:
 */
-int CDCL(Formula phi) {
+int CDCL(Formula &phi) {
     int dl = 0;
 	if (UnitPropagation(phi,Variable(0,-1),dl) == CONFLICT) {
 		return UNSAT;
 	}
 	while (!phi.allVariablesAssigned()) {
-        for (auto& it : phi.unassignedIndex)
-            cout << it << endl;
 		Variable branchVar = PickBranchingVariable(phi);
-        cout << "Picking A Branching variable: " << branchVar.literal << " value: " << branchVar.value << endl;
-        phi.printFormula();
-        phi.printIndex();
+		cout << "***********************************************" << endl;
+        cout << "Picking a branching variable: " << branchVar.letter << " value: " << branchVar.value << endl;
+
 		dl++;
 		if (UnitPropagation(phi, branchVar,dl) == CONFLICT) {
             cout << "CONFLICT WAS DETECTED" << endl;
@@ -312,9 +313,9 @@ int CDCL(Formula phi) {
 				dl = beta;
 			}
 		}
+		phi.printFormula();
+		phi.printIndex();
 	}
-    phi.printFormula();
-    phi.printIndex();
 	return SAT;
 }
 

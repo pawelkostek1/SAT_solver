@@ -6,7 +6,6 @@ using namespace std;
 
 Formula::Formula(int _numOfvar, int _numOfClauses, vector<Clause> _formula)
 {
-
 	this->numOfClauses = _numOfClauses;
 	formula = _formula;
     
@@ -250,12 +249,13 @@ void Formula::printFormula() {
     cout << endl;
 }
 void Formula::printIndex(){
-    cout << "UNASSIGNED INDEX" << endl;
+    cout << "UNASSIGNED VARIABLES" << endl;
     for (auto& it : unassignedIndex)
-        cout << it << endl;
-    cout << "ASSIGNED INDEX" << endl;
+        cout << variables[it].letter << endl;
+    cout << "ASSIGNED VARIABLES" << endl;
     for (auto& it : assignedIndex)
-        cout << it << endl;
+        cout << variables[it].letter << endl;
+	cout << endl;
 }
 
 void Formula::bumpActivities(vector<int> learnedClauseVars) {

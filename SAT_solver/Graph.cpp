@@ -30,10 +30,10 @@ int Graph::addNode(int literal, int level, int value, vector<Variable> parentVar
 void Graph::setNodeParents(int nodeId,vector<Variable> parentVariables){
     
     Node node = nodes[nodeId];
-    for (int i = 0; i < parentVariables.size(); i++){
+    for (unsigned int i = 0; i < parentVariables.size(); i++){
         int parentId = parentVariables[i].literal;
         vector<int> parentNodes = variableIndex[parentId];
-        for (int j = 0; j < parentNodes.size(); j++){
+        for (unsigned int j = 0; j < parentNodes.size(); j++){
             int parentNodeId = parentNodes[j];
             node.addParent(parentNodeId);
         }
@@ -42,7 +42,7 @@ void Graph::setNodeParents(int nodeId,vector<Variable> parentVariables){
 }
 
 void Graph::removeNodesByLiteralId(int literalId){
-    for (int i =0; i < variableIndex[literalId].size(); i++){
+    for (unsigned int i =0; i < variableIndex[literalId].size(); i++){
         int nodeId = variableIndex[literalId][i];
         nodes.erase(nodeId);
         
@@ -57,7 +57,7 @@ int Graph::backtrackToLowestLevelParent(int parentId, int maxLevel) {
 	list<int> listOfParents = nodes[parentId].parentNodes;
 	//Backtrack to the parent with the lowest level
 	//Runs until the list of parents is empty - the root node was reached
-	while (listOfParents.size != 0) {
+	while (listOfParents.size() != 0) {
 		for (auto const& parent : listOfParents) {
 			if (nodes[parent].level < level) {
 				level = nodes[parent].level;
@@ -70,7 +70,7 @@ int Graph::backtrackToLowestLevelParent(int parentId, int maxLevel) {
 }
 
 void Graph::printGraph(){
-    for(int i = 0; i < levelIndex.size(); i++){
+    for(unsigned int i = 0; i < levelIndex.size(); i++){
         //cout << "LVL" << i << endl;
         
     }
