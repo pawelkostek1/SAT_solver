@@ -16,6 +16,14 @@ Formula::Formula(vector<Clause> _formula,unordered_map<int,Variable> _variables)
 	//Can optimize later by sorting it while the clauses are added to the formula
     sort(formula.begin(), formula.end(), [](const Clause & a, const Clause & b){ return a.literals.size() < b.literals.size(); });
     
+<<<<<<< HEAD
+=======
+    for (int i = 1; i <= _numOfvar; i++) {
+        cout << "Adding var: " << i <<" = "<< (char)('A' + i - 1) << "." << endl;
+        addVariable(i,-1);
+    }
+	cout << "Formula initialized." << endl<<endl;
+>>>>>>> 5f93ad95cdcd60a13382788eefa6716093dd79ec
     implicationGraph = Graph();
 
 }
@@ -53,10 +61,15 @@ int Formula::assignVariable(int literal, int value, int level, vector<Variable> 
     }
     
     //cout << "assigning value to variable: "<< literal << ", " << variables[literal].value << endl;
-    //Add the
+    //Add the node
     implicationGraph.addNode(literal,level, value, parentVariables);
-    if (variables[literal].value != value and variables[literal].value != -1){
+	cout << "Added new node for literal: " << literal <<" with value: "<< variables[literal].value << " and node indeces: ";
+	for (int i = 0; i < implicationGraph.variableIndex[literal].size(); i++)
+		cout << implicationGraph.variableIndex[literal][i] << " ";
+	cout << endl;
+    if (variables[literal].value != value && variables[literal].value != -1){
 		implicationGraph.ConflictingLiteralId = literal;
+		cout << "Resulted in conflict for literal " << literal << endl;
         return CONFLICT;
     }else{
         return NOCONFLICT;
@@ -80,7 +93,7 @@ ImplicationAnalysis Formula::setInferredVariable(int clauseIndex){
     int unassignedCount = 0;
     Variable inferredVar = Variable(0,-1);
     vector<Variable> parentVars = vector<Variable>();
-    for (int i = 1; i <= clause.literals.size(); i++){
+    for (unsigned int i = 1; i <= clause.literals.size(); i++){
         int literal = clause.literals[i];
         int literalId = abs(literal);
         Variable var = variables[literalId];
@@ -224,6 +237,14 @@ void Formula::printFormula() {
     }
     cout << endl;
 }
+
+void Formula::printVariables() {
+	for (auto& it : variables) {
+		cout << "Variable: " << it.second.letter<<"("<<it.first<<") was assigned: " << it.second.value << " and has activity level set to: " << it.second.activity << endl;
+	}
+	cout << endl;
+}
+
 void Formula::printIndex(){
     cout << "UNASSIGNED VARIABLES" << endl;
     for (auto& it : unassignedIndex)
@@ -234,9 +255,9 @@ void Formula::printIndex(){
 	cout << endl;
 }
 
-void Formula::bumpActivities(vector<int> learnedClauseVars) {
-	for (unsigned int i = 0; i < learnedClauseVars.size(); i++) {
-		variables[learnedClauseVars[i]].activity += 1.0;
+void Formula::bumpActivities(vector<int> learnedClause) {
+	for (unsigned int i = 0; i < learnedClause.size(); i++) {
+		variables[abs(learnedClause[i])].activity += 1.0;
 	}
 }
 
