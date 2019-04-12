@@ -4,63 +4,41 @@
 #include<algorithm>
 using namespace std;
 
-Formula::Formula(int _numOfvar, int _numOfClauses, vector<Clause> _formula)
+Formula::Formula(vector<Clause> _formula,unordered_map<int,Variable> _variables)
 {
-	this->numOfClauses = _numOfClauses;
+    variables = _variables;
 	formula = _formula;
+    //initialise the unnasignedIndex
+    for (int i = 1; i <= variables.size();i++){
+        unassignedIndex.push_back(i);
+    }
     
 	//Can optimize later by sorting it while the clauses are added to the formula
     sort(formula.begin(), formula.end(), [](const Clause & a, const Clause & b){ return a.literals.size() < b.literals.size(); });
     
-    for (int i = 1; i <= _numOfvar; i++) {
-        cout << "adding var: " << i << endl;
-        addVariable(i,-1);
-    }
     implicationGraph = Graph();
+
 }
 
 Formula::~Formula()
 {
 }
 
-void Formula::addVariable(int absLiteral,int value){
-    variables[absLiteral] = Variable(absLiteral,value);
-    unassignedIndex.push_back(absLiteral);
-    index(absLiteral);
-    numOfvar++;
-}
 
 void Formula::removeVariable(int absLiteral){
     variables.erase(absLiteral);
     unassignedIndex.remove(absLiteral);
     assignedIndex.remove(absLiteral);
-    clausesIndexes.erase(absLiteral);
-    numOfvar--;
 }
 
-void Formula::index(int absLiteral){
-    for (int i = 0; i < getNumOfClauses(); i++) {
-        auto itPos = find(formula[i].literals.begin(), formula[i].literals.end(), absLiteral);
-        auto itNeg = find(formula[i].literals.begin(), formula[i].literals.end(), absLiteral*-1);
-        if (itPos != formula[i].literals.end() or itNeg != formula[i].literals.end()) {
-            //i represents the unique id for a clause
-            if (formula[i].literals.size() == 1){
-                //this is to help optmization faster find the clauses with only one literal
-                //cout << "Single literal clause: " << formula[i][0] << " " << i << endl;
-                clausesIndexes[absLiteral].insert(clausesIndexes[absLiteral].begin(),i);
-            }else{
-                clausesIndexes[absLiteral].push_back(i);
-            }
-        }
-    }
-}
+
 
 int Formula::getNumOfVar() {
-	return this->numOfvar;
+	return this->variables.size();
 }
 
 int Formula::getNumOfClauses() {
-	return this->numOfClauses;
+	return this->formula.size();
 }
 
 int Formula::assignVariable(int literal, int value, int level, vector<Variable> parentVariables) {
@@ -93,7 +71,7 @@ void Formula::unassignVariable(int literal) {
 }
 
 bool Formula::allVariablesAssigned(){
-    return this->numOfvar == assignedIndex.size();
+    return variables.size() == assignedIndex.size();
 }
 
 ImplicationAnalysis Formula::setInferredVariable(int clauseIndex){
@@ -161,7 +139,6 @@ int Formula::removeSingleLiteralVariables(){
             approvedClauses = 0;
             //remove the formula
             formula.erase(formula.begin()+i);
-            numOfClauses-=1;
             cout << "Formula size after deletion: " << formula.size() << endl;
             //since we removed a clause we let i be the same until the next loop
         }else{
@@ -179,7 +156,6 @@ int Formula::removeSingleLiteralVariables(){
                     //Delete the clause all together because it has already been satisified by the single literal
                     //assignement
                     formula.erase(formula.begin()+i);
-                    numOfClauses-=1;
                     //since we again removed a clause we do not modify i
                     incrementI = 0;
                     //since we do not know if the clause we erased was contributed to the approvedCount

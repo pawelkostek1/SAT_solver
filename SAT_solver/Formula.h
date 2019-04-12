@@ -7,11 +7,11 @@
 #include"Variable.h"
 #include"Clause.h"
 #include"constants.h"
+#include"Variable.h"
 //Intially read the data into array of vectors, we may want to consider implementing our custom object for stroing formula...Formula
 
 class Formula {
-	int numOfvar;
-	int numOfClauses;
+
 	float decay = 0.8;
 
 public:
@@ -19,9 +19,8 @@ public:
 	unordered_map<int, Variable> variables;
     list<int> assignedIndex;
     list<int> unassignedIndex;
-
     unordered_map<int, vector<int> > clausesIndexes;
-	Formula(int _numOfvar, int _numOfClauses, vector<Clause> _F);
+	Formula(vector<Clause> _F,unordered_map<int, Variable>);
 	~Formula();
     Graph implicationGraph;
 	int getNumOfVar();

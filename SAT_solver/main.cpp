@@ -10,6 +10,11 @@
 #include"Graph.h"
 #include"constants.h"
 #include"Clause.h"
+#include"Variable.h"
+#include<unordered_map>
+#include<cmath>
+#include<algorithm>    // std::find
+
 using namespace std;
 
 //Declare functions
@@ -70,30 +75,55 @@ Formula LoadFormula() {
 	}
 	//Read the rest of the file containing encoded formula
 	vector<Clause> phi = vector<Clause>();
+    unordered_map<int,Variable> variables = unordered_map<int,Variable>();
+    
 	int i = 0;
 	while (File) {
 		int temp = 1;
 		File >> temp;
         phi.push_back(Clause());
-		while (temp) {
+        int count = 0;
+        while (temp) {
 			phi[i].literals.push_back(temp);
+            phi[i].literalIds.push_back(abs(temp));
+            auto literal = phi[i].literals[phi[i].literals.size()-1];
+            auto it = variables.find(abs(literal));
+            if (it == variables.end()){
+                variables[abs(literal)] = Variable(abs(literal),-1);
+            }
+           // cout << literal << ":" << i << endl;
+            if (count < 2){
+                
+                if (literal < 0){
+                    variables[abs(literal)].addNegativeClause(i);
+                }else{
+                    variables[abs(literal)].addPositiveClause(i);
+                }
+                count+= 1;
+            }
 			File >> temp;
 		}
-		/*
-		for (int j = 0; j < phi[i].size(); ++j) {
-			cout << phi[i][j] << ' ';
-		}
-		cout << endl;
-		*/
+        //cout << "clause end" << endl;
+        
 		i++;
 		if (i == numOfClauses) {
 			break;
 		}
 	}
+    /*for(int i = 1; i <= variables.size(); i++){
+        for(int j = 0; j < variables[i].negativeClauses.size(); j++){
+            cout << variables[i].negativeClauses[j] << " ";
+        }
+        cout << " :: " << variables[i].letter << " :: ";
+        for(int j = 0; j < variables[i].postiveClauses.size(); j++){
+            cout << variables[i].postiveClauses[j] << " ";
+        }
+        cout << endl;
+    }*/
 
 	File.close();
     
-	return Formula(numOfvar, numOfClauses, phi);
+	return Formula(phi,variables);
 }
 
 
@@ -135,15 +165,114 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
     vector<Variable> vars = vector<Variable>();
     vars.push_back(branchVar);
 
-    while(!phi.allVariablesAssigned() and vars.size() > 0){
+    while(!phi.allVariablesAssigned() || vars.size() > 0){
         //we need assign the
         Variable var = vars.front();
-        vars.erase(vars.begin(), vars.begin()+1);
         
-        vector<int> varClauses = phi.clausesIndexes[var.literal];
-        for (unsigned int i = 0; i < varClauses.size(); i++) {
+        vars.erase(vars.begin(), vars.begin()+1);
+        //clauses that comp of assigned variable
+        vector<int> *clauses;
+        if (var.value == 0){
+            clauses = &phi.variables[var.literal].postiveClauses;
+        }else{
+            clauses = &phi.variables[var.literal].negativeClauses;
+        }
+        for (int i; i< clauses->size();i++){
+            int clauseId = clauses[i];
+            Clause clause = phi.formula[clauseId];
+            //figure out which pointer you are
+            int * currentPointer;
+            int * otherPointer;
+            if(var.literal == abs(clause.literals[clause.p1])){
+                //this means our variable is p1
+                currentPointer = &clause.p1;
+                otherPointer = &clause.p2;
+            }else{
+                //if you ended up here it means your variable pointer is p2
+                currentPointer = &clause.p2;
+                otherPointer = &clause.p1;
+            }
+            //the assumption here is that the currentPointer is now false since we are only looking
+            //at the compliment clauses (aka the clauses that did not satisfy the assignement just made)
+            
+            //for that reason we care only if our other pointer is true since we know the currentPointer value
+            //has to be false
+            if(!clause.evaluate(*otherPointer, phi.variables[clause.pointerToLiteralID(*otherPointer)].value)){
+                //the other pointer is true and so we should move it to that pointers
+                return CONFLICT;
+            }
+            else if(phi.variables[clause.pointerToLiteralID(*otherPointer)].value == -1){
+                int newPointer = *currentPointer;
+                for (int i = 0; i < clause.literals.size(); i++ ){
+                    auto literal = clause.literals[i];
+                    int literalId = clause.pointerToLiteralID(i);
+                    if(i != *otherPointer && i != *currentPointer && phi.variables[literalId].value == -1){
+                        if (literal < 0){
+                            phi.variables[literalId].addNegativeClause(clauseId);
+                            var.removeNegativeClause(clauseId);
+                            
+                        }else{
+                            phi.variables[literalId].addPositiveClause(clauseId);
+                            var.removePositiveClause(clauseId);
+                        }
+                        newPointer = i;
+                        break;
+                    }
+                    
+                }
+                if(*currentPointer != newPointer){
+                    * currentPointer = newPointer;
+                }else{
+                    int implicatedVarId = clause.pointerToLiteralID(*otherPointer);
+                    int implicatedVarValue = clause.whatValueMakesThisLiteralTrue(* otherPointer);
+                    vector<int> parentLiterals = clause.getParentsByPointer(*otherPointer);
+                    vector<Variable> parentVariables = vector<Variable>();
+                    for(int i = 0; i < parentLiterals.size();i++){
+                        parentVariables.push_back(phi.variables[i]);
+                    }
+                    //redo to make nicer
+                    int implicationAssignmentResult = phi.assignVariable(implicatedVarId,implicatedVarValue, level,parentVariables);
+                    if(implicationAssignmentResult == CONFLICT){
+                        return CONFLICT;
+                    }
+                    vars.push_back(phi.variables[implicatedVarId]);
+                }
+            }
+            
+        
+            
+            
+            /*bool pointerFoundFlag = false;
+            for(int j; j < clause.literals.size();j++){
+                auto literal = clause.literals[j];
+                vector<int> *literalClauses;
+                Variable *clauseVar = &phi.variables[abs(literal)];
+                if(literal < 0){
+                    literalClauses = &clauseVar->negativeClauses;
+                }else{
+                    literalClauses = &clauseVar->postiveClauses;
+                }
+                
+                if (clauseVar->value == -1){
+                    
+                    if(pointerFoundFlag == true){
+                        literalClauses->push_back(clauseId);
+                    }else{
+                        auto it = find(literalClauses->begin(),literalClauses->end(),clauseId);
+                        if(it == literalClauses->end()){
+                            literalClauses->push_back(clauseId);
+                        }else{
+                            pointerFoundFlag = true;
+                        }
+                    }
+                    
+                }
+            }*/
+        }
+        /*
+        for (unsigned int i = 0; i < clauses.size(); i++) {
             //Go through each clause and check if we can infer a variable or not
-            ImplicationAnalysis result = phi.setInferredVariable(varClauses[i]);
+            ImplicationAnalysis result = phi.setInferredVariable(clauses[i]);
             if (result.target.literal != 0){
                 //
                 int implicationAssignmentResult = phi.assignVariable(result.target.literal, result.target.value, level, result.parents);
@@ -152,7 +281,7 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
                 }
                 vars.push_back(result.target);
             }
-        }
+        }*/
     }
     return NOCONFLICT;
 }
