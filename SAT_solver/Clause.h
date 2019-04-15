@@ -1,6 +1,7 @@
 #pragma once
 #include<vector>
 #include"Clause.h"
+
 using namespace std;
 
 /*
@@ -21,4 +22,5 @@ public:
     int pointerToLiteralID(int pId);
     int whatValueMakesThisLiteralTrue(int p);
     vector<int> getParentsByPointer(int p);
+	void printClause();
 };

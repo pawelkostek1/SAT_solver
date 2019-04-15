@@ -4,7 +4,7 @@
 #include<algorithm>
 using namespace std;
 
-Formula::Formula(vector<Clause> _formula,unordered_map<int,Variable> _variables)
+Formula::Formula(vector<Clause> _formula, unordered_map<int,Variable> _variables)
 {
     variables = _variables;
 	formula = _formula;
@@ -14,8 +14,9 @@ Formula::Formula(vector<Clause> _formula,unordered_map<int,Variable> _variables)
     }
     
 	//Can optimize later by sorting it while the clauses are added to the formula
-    sort(formula.begin(), formula.end(), [](const Clause & a, const Clause & b){ return a.literals.size() < b.literals.size(); });
-    
+	//!!!! Comment out sorting for now as it shuffles the indeces of the clauses
+    //sort(formula.begin(), formula.end(), [](const Clause & a, const Clause & b){ return a.literals.size() < b.literals.size(); });
+/*
 <<<<<<< HEAD
 =======
     for (int i = 1; i <= _numOfvar; i++) {
@@ -24,6 +25,7 @@ Formula::Formula(vector<Clause> _formula,unordered_map<int,Variable> _variables)
     }
 	cout << "Formula initialized." << endl<<endl;
 >>>>>>> 5f93ad95cdcd60a13382788eefa6716093dd79ec
+*/
     implicationGraph = Graph();
 
 }
@@ -99,7 +101,7 @@ ImplicationAnalysis Formula::setInferredVariable(int clauseIndex){
         Variable var = variables[literalId];
         bool positive = literal > 0;
         //The intuition here is that if any literal value in the cluse is true we cannot infer any other variable
-        if ((!positive and var.value == 0) or (positive and var.value == 1)){
+        if ((!positive && var.value == 0) || (positive && var.value == 1)){
             break;
         }else if (var.value != -1){
             parentVars.push_back(variables[literalId]);
@@ -140,7 +142,7 @@ int Formula::removeSingleLiteralVariables(){
         cout << "Checking clause: " << i << endl;
         if(clause.size() == 1){
             //Check weather this literal already has a single literal of the complimentary sort
-            if (singleLiteralVariableSign[abs(clause[0])] and singleLiteralVariableSign[abs(clause[0])] == -1*clause[0]){
+            if (singleLiteralVariableSign[abs(clause[0])] && singleLiteralVariableSign[abs(clause[0])] == -1*clause[0]){
                 return CONFLICT;
             }else if(!singleLiteralVariableSign[abs(clause[0])]){
                 //the sign is the same and thus we can proceed
@@ -195,7 +197,7 @@ int Formula::removeSingleLiteralVariables(){
         
         //Make sure we reset the i variable so we only exit the while loop
         //when all variablesWithOneLiteral have been
-        if(approvedClauses < formula.size() and i == formula.size()-1){
+        if(approvedClauses < formula.size() && i == formula.size()-1){
             i = 0;
         }  
     }
