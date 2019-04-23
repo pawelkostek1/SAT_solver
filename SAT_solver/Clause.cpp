@@ -3,9 +3,14 @@
 #include<iostream>
 #include<cmath>
 Clause::Clause(vector<int> _value) {
-    literals = _value;
-	for (int i = 0; i < _value.size(); i++)
+    //literals = _value;
+	copy(_value.begin(), _value.end(), back_inserter(literals));
+	for (int i = 0; i < _value.size(); i++) {
 		literalIds.push_back(abs(_value[i]));
+		//cout << _value[i]<<" ";
+	}
+	//cout << endl;
+
     p1 = 0;
     p2 = 1;
     
@@ -21,6 +26,10 @@ bool Clause::evaluate(int p, int value){
 }
 int Clause::pointerToLiteralID(int p){
     return literalIds[p];
+	//for (auto&& it : literalIds) {
+	//	cout << it << " ";
+	//}
+	//cout << endl;
 }
 int Clause::whatValueMakesThisLiteralTrue(int p){
     if (literals[p] < 0){
@@ -31,8 +40,19 @@ int Clause::whatValueMakesThisLiteralTrue(int p){
 }
 
 vector<int> Clause::getParentsByPointer(int p){
-    vector<int> parents = literalIds;
-    parents.erase(literalIds.begin()+p);
+    vector<int> parents(literalIds);
+	//std::cout << "1. Parent size: " << parents.size() << endl;
+	//for (auto&& it : literalIds) {
+	//	cout << it << " ";
+	//}
+	//cout << endl;
+	//cout << p << endl;
+    parents.erase(parents.begin()+p);
+	//std::cout << "2. Parent size: " << parents.size() << endl;
+	//for (auto&& it : parents) {
+	//	cout << it << " ";
+	//}
+	//cout << endl;
     return parents;
   
 }
@@ -42,6 +62,8 @@ Clause::~Clause()
 
 Clause::Clause()
 {
+	p1 = 0;
+	p2 = 1;
 }
 
 void Clause::printClause()
