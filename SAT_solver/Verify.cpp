@@ -13,15 +13,15 @@ Verify::Verify()
     variables[4] = Variable(4,-1);
     variables[5] = Variable(5,-1);
     variables[6] = Variable(6,-1);
-    
-    clauses.push_back(Clause(vector<int>((1,2,6))));
-    clauses.push_back(Clause(vector<int> ((-1,-3,5))));
-    clauses.push_back(Clause(vector<int> ((6,-5))));
-    clauses.push_back(Clause(vector<int> ((4,5,6))));
-    clauses.push_back(Clause(vector<int> ((-6,-1,-3,2))));
-    clauses.push_back(Clause(vector<int> ((1,6))));
-    clauses.push_back(Clause(vector<int> ((3,1,-6))));
-    
+    cout << "Created variables" << endl;
+    clauses.push_back(Clause({1,2,6}));
+    clauses.push_back(Clause({-1,-3,5}));
+    clauses.push_back(Clause({6,-5}));
+    clauses.push_back(Clause({4,5,6}));
+    clauses.push_back(Clause({-6,-1,-3,2}));
+    clauses.push_back(Clause({1,6}));
+    clauses.push_back(Clause({3,1,-6}));
+     cout << "Created clauses" << endl;
     Formula formula = Formula(clauses, variables);
     formula.printFormula();
 }
@@ -35,5 +35,5 @@ Verify::~Verify()
 
 bool Verify::testGraph(){
     
-    return false
+    return false;
 }

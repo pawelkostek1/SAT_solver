@@ -14,6 +14,7 @@
 #include<unordered_map>
 #include<cmath>
 #include<algorithm>    // std::find
+#include"Verify.h"
 //#include "Verify.h"
 using namespace std;
 
@@ -27,6 +28,9 @@ void Backtrack(Formula &phi, int beta);
 int CDCL(Formula &phi);
 
 int main() {
+    
+    //TESTING TIME
+    Verify tester = Verify();
     
 	//Read the encoded Enstein's puzzle into variable phi
 	Formula phi = LoadFormula();
