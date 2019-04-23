@@ -81,7 +81,7 @@ void Clause::printClause()
 			std::cout << " OR ";
 		}
 	}
-	std::cout << std::endl;
+	//std::cout << std::endl;
 }
 
 

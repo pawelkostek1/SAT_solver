@@ -2,6 +2,11 @@
 #include"constants.h"
 #include<map>
 #include<algorithm>
+#include <iostream>
+#include <iomanip>
+#include <locale>
+#include <iostream>
+#include <sstream>
 using namespace std;
 
 Formula::Formula(vector<Clause> _formula, unordered_map<int,Variable> _variables)
@@ -404,4 +409,75 @@ void Formula::decayActivities() {
 	for (auto& it : variables) {
 		it.second.activity *= this->decay;
 	}
+}
+
+void Formula::print2Watched() {
+	cout << "|---------------------------------------|---|--------------------------------------|" << endl;
+
+		for (auto& it : assignedIndex) {
+			
+			for (int i = 0; i < max(variables[it].postiveClauses.size(), variables[it].negativeClauses.size()); i++) {
+				if (i<variables[it].postiveClauses.size()) {
+					ostringstream s;
+					Clause clause = formula[variables[it].postiveClauses[i]];
+					cout << left << setw(40);
+					s << "| ";
+
+					for (unsigned int j = 0; j < clause.literals.size(); j++) {
+						if (clause.literals[j] < 0) {
+							s << "NOT " << abs(clause.literals[j]);
+						}
+						else {
+							s << clause.literals[j];
+						}
+
+						if (j < clause.literals.size() - 1) {
+							s << " OR ";
+						}
+					}
+					cout << s.str();
+				}
+				else {
+					ostringstream s;
+					cout << left << setw(40);
+					s << "| ";
+					cout << s.str();
+				}
+				if (i == 0) {
+					cout << "| "<< variables[it].letter << " |";;
+				}
+				else {
+					cout << "|   |";
+				}
+				if (i<variables[it].negativeClauses.size()) {
+					ostringstream s;
+					Clause clause = formula[variables[it].negativeClauses[i]];
+					cout << right << setw(40);
+					
+
+					for (unsigned int j = 0; j < clause.literals.size(); j++) {
+						if (clause.literals[j] < 0) {
+							s << "NOT " << abs(clause.literals[j]);
+						}
+						else {
+							s << clause.literals[j];
+						}
+
+						if (j < clause.literals.size() - 1) {
+							s << " OR ";
+						}
+					}
+					s << "|\n";
+					cout << s.str();
+				}
+				else {
+					ostringstream s;
+					cout << right << setw(40);
+					s << "|\n";
+					cout << s.str();
+				}
+			}
+			cout << "|---------------------------------------|---|--------------------------------------|" << endl;
+		}
+		cout << "|---------------------------------------|---|--------------------------------------|" << endl;
 }

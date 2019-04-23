@@ -133,7 +133,7 @@ Formula LoadFormula() {
 	//The following code assume .cnf input file
     int numOfvar = 0, numOfClauses = 0;
 	ifstream File;
-	File.open("puzzle6.cnf");
+	File.open("puzzle.cnf");
 	if (!File) {
 		cout << "Unable to open file puzzle.cnf" << endl;
 	}
@@ -149,10 +149,10 @@ Formula LoadFormula() {
 			if (line.substr(2, 3) != "cnf") {
 				cout << "Error: Provided file is not in CNF format." << line.substr(2, 3) << endl;
 			}
-			numOfvar = stoi(line.substr(6, 2));
-			numOfClauses = stoi(line.substr(9, 2));
-			//numOfvar = stoi(line.substr(6, 1));
-			//numOfClauses = stoi(line.substr(8, 1));
+			//numOfvar = stoi(line.substr(6, 2));
+			//numOfClauses = stoi(line.substr(9, 2));
+			numOfvar = stoi(line.substr(6, 1));
+			numOfClauses = stoi(line.substr(8, 1));
 			cout << "numOfvar: " << numOfvar << " numOfClauses: " << numOfClauses << endl;
 			break;
 		}
@@ -380,6 +380,7 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
 
             }
         }
+		phi.print2Watched();
     }
 	cout << "Level index: " << phi.implicationGraph.levelIndex[0].size() << endl;
 	cout << "Finished unit propagation" << endl;
@@ -572,7 +573,7 @@ int CDCL(Formula &phi) {
 		if (UnitPropagation(phi, branchVar, dl) == CONFLICT) {
             cout << "CONFLICT WAS DETECTED" << endl;
 			int beta = ConflictAnalysis(phi, dl);
-			cout << "Conflict Analysis suggested to backtrack to level: " << beta << "." << endl;
+			cout << "Conflict Analysis suggested to backtrack to level: " << beta << "." ;
 			if (beta < 0) {
 				return UNSAT;
 			}
