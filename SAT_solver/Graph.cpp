@@ -63,6 +63,11 @@ void Graph::removeNodesByLiteralId(int literalId){
     }
     //reset the variable-node Index since we removed all nodes they point to
     variableIndex[literalId] = vector<int>();
+
+	cout << "Removed node for literalID: " << literalId << " and node indeces: ";
+	for (int i = 0; i < variableIndex[literalId].size(); i++)
+		cout << variableIndex[literalId][i] << " ";
+	cout << endl;
 }
 
 int Graph::backtrackToLowestLevelParent(int parentId, int maxLevel) {

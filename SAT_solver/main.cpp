@@ -129,7 +129,7 @@ Formula LoadFormula() {
 	//The following code assume .cnf input file
     int numOfvar = 0, numOfClauses = 0;
 	ifstream File;
-	File.open("puzzle.cnf");
+	File.open("puzzle6.cnf");
 	if (!File) {
 		cout << "Unable to open file puzzle.cnf" << endl;
 	}
@@ -145,10 +145,10 @@ Formula LoadFormula() {
 			if (line.substr(2, 3) != "cnf") {
 				cout << "Error: Provided file is not in CNF format." << line.substr(2, 3) << endl;
 			}
-			//numOfvar = stoi(line.substr(6, 3));
-			//numOfClauses = stoi(line.substr(10, 4));
-			numOfvar = stoi(line.substr(6, 1));
-			numOfClauses = stoi(line.substr(8, 1));
+			numOfvar = stoi(line.substr(6, 2));
+			numOfClauses = stoi(line.substr(9, 2));
+			//numOfvar = stoi(line.substr(6, 1));
+			//numOfClauses = stoi(line.substr(8, 1));
 			cout << "numOfvar: " << numOfvar << " numOfClauses: " << numOfClauses << endl;
 			break;
 		}
@@ -221,6 +221,7 @@ void printAnswer(Formula &phi, int ans) {
 		cout << "UNSAT" << endl;
 	}
 	cout << "The following assignments were found:"<<endl;
+	phi.printVariables();
 	for (auto& it: phi.variables) {
 		cout << it.second.letter << "(" << it.second.value << ") ";
 	}
@@ -279,7 +280,7 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
             int  *currentPointer = new int;
             int  *otherPointer = new int;
 
-			cout << "clauseId: " << clauseId << endl;
+			//cout << "clauseId: " << clauseId << endl;
             if(var.literal == abs(clause->literals[clause->p1]))
 			{
                 //this means our variable is p1
@@ -366,7 +367,7 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
                     }
 					//cout << endl;
                     //redo to make nicer
-					cout << "Implied var: " << implicatedVarId << " with val: " << implicatedVarValue << " with parent size: " << parentVariables.size() << endl;
+					//cout << "Implied var: " << implicatedVarId << " with val: " << implicatedVarValue << " with parent size: " << parentVariables.size() << endl;
 					//phi.printVariables();
 				
                     vars.push_back(Variable(implicatedVarId, implicatedVarValue));
@@ -533,8 +534,8 @@ void Backtrack(Formula &phi, int beta) {
 	   unassign all the variables that were set up until the given level beta.
 	*/
 	int initialSize = phi.implicationGraph.levelIndex.size();
-	cout << "initialSize: " << initialSize;
-	for (int i = initialSize; i > beta; i--) {
+	cout << "initialSize: " << initialSize << "beta: " << beta << endl;
+	for (int i = initialSize; i >= beta; i--) {
 		vector<int> levelIndexList = phi.implicationGraph.levelIndex[i];
 		cout << "levelIndexList size: " << levelIndexList.size() << endl;
 		phi.implicationGraph.levelIndex.erase(i);
@@ -556,13 +557,15 @@ int CDCL(Formula &phi) {
 	if (UnitPropagation(phi,Variable(0,-1),dl) == CONFLICT) {
 		return UNSAT;
 	}
+	phi.printFormula();
+	phi.printIndex();
 	while (!phi.allVariablesAssigned()) {
 		Variable branchVar = PickBranchingVariable(phi);
 		cout << "***********************************************" << endl;
         cout << "Picking a branching variable: " << branchVar.letter << " value: " << branchVar.value << endl;
 
 		dl++;
-		if (UnitPropagation(phi, branchVar,dl) == CONFLICT) {
+		if (UnitPropagation(phi, branchVar, dl) == CONFLICT) {
             cout << "CONFLICT WAS DETECTED" << endl;
 			int beta = ConflictAnalysis(phi, dl);
 			cout << "Conflict Analysis suggested to backtrack to level: " << beta << "." << endl;
@@ -577,8 +580,8 @@ int CDCL(Formula &phi) {
 				//phi.printFormula();
 			}
 		}
-		//phi.printFormula();
-		//phi.printIndex();
+		phi.printVariables();
+		phi.printIndex();
 	}
 	return SAT;
 }

@@ -57,14 +57,18 @@ int Formula::assignVariable(int literal, int value, int level, vector<Variable> 
     //we want to assign there is a conflict 
     
     //variable has not been assigned a value yet or its the same value at a different level
+	cout << "assignigning  variable value:" << variables[literal].value << endl;
     if(variables[literal].value == -1){
         unassignedIndex.remove(literal);
+		cout << "assignedIndex before size: " << assignedIndex.size() << " ";
         assignedIndex.push_back(literal);
+		cout << "assignedIndex after size: " << assignedIndex.size() << endl;
         variables[literal].value = value;
+		cout << "Assigned new variable: " << literal << endl;
     }
-	if (prevAssignedIndex[literal] == -1) {
-		prevAssignedIndex[literal] = value;
-	}
+	//if (prevAssignedIndex[literal] == -1) {
+	//	prevAssignedIndex[literal] = value;
+	//}
     
     //cout << "assigning value to variable: "<< literal << ", " << variables[literal].value << endl;
     //Add the node
@@ -84,12 +88,22 @@ int Formula::assignVariable(int literal, int value, int level, vector<Variable> 
 }
 
 void Formula::unassignVariable(int literal) {
+	cout << "Unassigning literal: " <<literal<< endl;
+	cout << "\tassignedIndex before size: " << assignedIndex.size() << " ";
     assignedIndex.remove(literal);
-    unassignedIndex.push_back(literal);
+	cout << "\tassignedIndex after size: " << assignedIndex.size() << endl;
+	cout << "\tunassignedIndex before size: " << unassignedIndex.size() << " ";
+	if (find(unassignedIndex.begin(), unassignedIndex.end(), literal) == unassignedIndex.end())
+	{
+		unassignedIndex.push_back(literal);
+	}
+    
+	cout << "\tunassignedIndex after size: " << unassignedIndex.size() << endl;
     variables[literal].value = -1;
 }
 
 bool Formula::allVariablesAssigned(){
+	cout << "variables.size: " << variables.size() << " assignedIndex.size(): "<<assignedIndex.size() << " unassignedIndex.size(): " << unassignedIndex.size() << endl;
     return variables.size() == assignedIndex.size();
 }
 
@@ -131,9 +145,89 @@ ImplicationAnalysis Formula::setInferredVariable(int clauseIndex){
     result.parents = parentVars;
     return result;
 }
+int Formula::removeSingleLiteralVariables() {
+	while(1){
+		vector<int> variablesWithOneLiteral = vector<int>();
+		unordered_map<int, int> singleLiteralVariableSign = unordered_map<int, int>();
+		//Find all the single literals
+		for (int i = 0; i < formula.size(); i++) {
+			vector<int> clause = formula[i].literals;
+			if (clause.size() == 1) {
+				auto conflictSingleLiteral = find(variablesWithOneLiteral.begin(), variablesWithOneLiteral.end(), -1*clause[0]);
+				if (conflictSingleLiteral != variablesWithOneLiteral.end()) {
+					return CONFLICT;
+				}
+				else {
+					variablesWithOneLiteral.push_back(clause[0]);
+					formula.erase(formula.begin() + i);
+					//Assign the single iteral to a corresponding value
+					if (clause[0] > 0) {
+						variables[abs(clause[0])].value = 1;
+						assignedIndex.push_back(abs(clause[0]));
+						unassignedIndex.remove(abs(clause[0]));
+					}
+					else {
+						variables[abs(clause[0])].value = 0;
+						assignedIndex.push_back(abs(clause[0]));
+						unassignedIndex.remove(abs(clause[0]));
+					}
+				}
+			}
+		}
+		if (variablesWithOneLiteral.size() == 0)
+			break;
+		//For all single literals remove the clause all together if it is satisified or remove the complement
+		for (int j = 0; j < variablesWithOneLiteral.size(); j++) {
+			//cout << "Considering single literal: " << variablesWithOneLiteral[j] << endl;
+			for (int i = 0; i < formula.size(); i++) {
+				vector<int> clause = formula[i].literals;
+				int literal = variablesWithOneLiteral[j];
+				int compLiteral = literal * -1;
+				//cout << "variable to test: " << literal << "complement: " << compLiteral << endl;
+				auto compPosition = find(clause.begin(), clause.end(), compLiteral);
+				auto normalPosition = find(clause.begin(), clause.end(), literal);
+				if (normalPosition != clause.end()) {
+					formula.erase(formula.begin() + i);
+				}
+				else if (compPosition != clause.end()) {
+					clause.erase(compPosition);
+					//cout << "Clause size: " << clause.size() << endl;
+					if (clause.size() != 0)
+						formula[i] = Clause(clause);
+					else
+						return CONFLICT;
+				}
+			}
+			//printFormula();
+		}
+	}
+	for (int unsigned i = 0; i < formula.size(); i++) {
+		vector<int> clause = formula[i].literals;
+		cout << "ClauseId: " << i << endl;
+		formula[i].printClause();
+		int count = 0;
+		for (int unsigned j = 0; j < clause.size(); j++) {
+			cout << "\tLiteral: " << clause[j] << endl;
+			if (count < 2) {
+				if (clause[j] < 0) {
+					cout << "\tNegative clause: " << i << " " << endl;
+					//formula[i].printClause();
+					variables[abs(clause[j])].addNegativeClause(i);
+				}
+				else {
+					cout << "\tPositive clause: " << i << " " << endl;
+					//formula[i].printClause();
+					variables[abs(clause[j])].addPositiveClause(i);
+				}
+				count += 1;
+			}
+		}
+	}
 
-int Formula::removeSingleLiteralVariables(){
-    cout << "hello";
+	return NOCONFLICT;
+}
+int Formula::removeSingleLiteralVariables2(){
+
     list<int> removedClauses = list<int>();
     unordered_map<int, int> singleLiteralVariableSign = unordered_map<int, int>();
     vector<int> variablesWithOneLiteral = vector<int>();
@@ -141,7 +235,7 @@ int Formula::removeSingleLiteralVariables(){
     int i = 0;
     while(approvedClauses < formula.size()){
         //if a clause has one literal add it to the variablesWithOneLiteral vector
-        //printFormula();
+        printFormula();
         vector<int> clause = formula[i].literals;
         cout << "Checking clause: " << i << endl;
         if(clause.size() == 1){
@@ -152,6 +246,16 @@ int Formula::removeSingleLiteralVariables(){
                 //the sign is the same and thus we can proceed
                 singleLiteralVariableSign[abs(clause[0])] = clause[0];
                 cout << clause[0];
+				//Assign the variable accordingly
+
+				if (clause[0] > 0) {
+					variables[abs(clause[0])].value = 1;
+					assignedIndex.push_back(abs(clause[0]));
+				}
+				else {
+					variables[abs(clause[0])].value = 0;
+					assignedIndex.push_back(abs(clause[0]));
+				}
             }
             
             variablesWithOneLiteral.push_back(clause[0]);
@@ -185,9 +289,11 @@ int Formula::removeSingleLiteralVariables(){
                 else if (compPosition != clause.end()){
                     //Delete the complement of the literal
                     clause.erase(compPosition);
-					
-                    formula[i] = Clause(clause);
-					
+					cout << "Clause size: " << clause.size() << endl;
+					if(clause.size()!=0)
+						formula[i] = Clause(clause);
+					else
+						formula.erase(formula.begin() + i);
 					//if (literal < 0) {
 					//	auto it = find(variables[abs(literal)].negativeClauses.begin(), variables[abs(literal)].negativeClauses.end(), i);
 					//	variables[abs(literal)].negativeClauses.erase(it);
@@ -210,7 +316,7 @@ int Formula::removeSingleLiteralVariables(){
             i+=incrementI;
             approvedClauses+=incrementA;
         }
-        
+		printVariables();
         //Make sure we reset the i variable so we only exit the while loop
         //when all variablesWithOneLiteral have been
         if(approvedClauses < formula.size() && i == formula.size()-1){
@@ -218,11 +324,11 @@ int Formula::removeSingleLiteralVariables(){
         }  
     }
     
-    //remove each variable that had a single literal clause from any index or assignment list
-    for (unsigned int i = 0; i < variablesWithOneLiteral.size(); i++){
-        cout << "remove: " << abs(variablesWithOneLiteral[i]) << endl;
-        removeVariable(abs(variablesWithOneLiteral[i]));
-    }
+    //remove each variable that had a single literal clause from any index or assignment list apart from the original variables list
+    //for (unsigned int i = 0; i < variablesWithOneLiteral.size(); i++){
+    //    cout << "remove: " << abs(variablesWithOneLiteral[i]) << endl;
+    //    removeVariable(abs(variablesWithOneLiteral[i]));
+    //}
     
     for(int unsigned i = 0; i < formula.size(); i++){
         vector<int> clause = formula[i].literals;
@@ -230,14 +336,18 @@ int Formula::removeSingleLiteralVariables(){
 		int count = 0;
         for(int unsigned j = 0; j < clause.size(); j++){
             cout << "\tLiteral: " << clause[j] << endl;
-			//if (count < 2){
-			//	if (clause[j] < 0){
-			//		variables[abs(clause[j])].addNegativeClause(i);
-			//	}else{
-			//		variables[abs(clause[j])].addPositiveClause(i);
-			//	}
-			//	count+= 1;
-			//}
+			if (count < 2){
+				if (clause[j] < 0){
+					cout <<"Negative clause: "<< clause[j] << " "<< endl;
+					formula[i].printClause();
+					variables[abs(clause[j])].addNegativeClause(i);
+				}else{
+					cout << "Positive clause: " << clause[j] << " " << endl;
+					formula[i].printClause();
+					variables[abs(clause[j])].addPositiveClause(i);
+				}
+				count+= 1;
+			}
         }
     }
     
@@ -275,10 +385,10 @@ void Formula::printVariables() {
 void Formula::printIndex(){
     cout << "UNASSIGNED VARIABLES" << endl;
     for (auto& it : unassignedIndex)
-        cout << variables[it].letter << endl;
+        cout << variables[it].literal << endl;
     cout << "ASSIGNED VARIABLES" << endl;
     for (auto& it : assignedIndex)
-        cout << variables[it].letter << endl;
+        cout << variables[it].literal << endl;
 	cout << endl;
 }
 
