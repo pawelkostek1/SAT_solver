@@ -16,7 +16,7 @@ class Graph {
 
 public:
     unordered_map<int,Node> nodes;
-    unordered_map<int,vector<int>> levelIndex;
+    unordered_map<int,vector<int> > levelIndex;
 	int ConflictingLiteralId;
 	Graph(); //Constructor
 	~Graph();

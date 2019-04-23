@@ -18,14 +18,12 @@ int Graph::addNode(int literal, int level, int value, vector<int> parentLiterals
     //max two nodes per literal
     //we start by checking if the node with the same value exists
     int nodeId = literal;
-    if (value == 0){
-        nodeId = literal*-1;
-    }
+    
     if(levelIndex.find(level) == levelIndex.end()){
         levelIndex[level] = {};
     }
     if(nodes.find(nodeId) == nodes.end()){
-        nodes[nodeId] = Node(nodeId,literal,value,level,parentLiterals);
+        nodes[nodeId] = Node(nodeId,abs(literal),value,level,parentLiterals);
     }else{
         nodes[nodeId].addParents(parentLiterals);
         if(nodes.find(nodeId*-1) != nodes.end()){
@@ -44,18 +42,15 @@ int Graph::addNode(int literal, int level, int value, vector<int> parentLiterals
 
 
 void Graph::removeNodesByLiteralId(int literalId){
-   /* for (unsigned int i =0; i < variableIndex[literalId].size(); i++){
-        int nodeId = variableIndex[literalId][i];
-        nodes.erase(nodeId);
-        
+    if(nodes.find(literalId*-1) != nodes.end()){
+        //found a opposite node and thus a conflict
+        nodes.erase(literalId*-1);
     }
-    //reset the variable-node Index since we removed all nodes they point to
-    variableIndex[literalId] = vector<int>();
-
-	cout << "Removed node for literalID: " << literalId << " and node indeces: ";
-	for (int i = 0; i < variableIndex[literalId].size(); i++)
-		cout << variableIndex[literalId][i] << " ";
-	cout << endl;*/
+    if(nodes.find(literalId) != nodes.end()){
+        //found a opposite node and thus a conflict
+        nodes.erase(literalId);
+    }
+    
 }
 
 int Graph::backtrackToLowestLevelParent() {
@@ -82,6 +77,7 @@ void Graph::printGraph(){
         }
         cout << endl;
     }
+    
     
 }
 

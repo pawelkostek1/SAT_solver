@@ -78,7 +78,7 @@ int Formula::assignVariable(int literal, int value, int level, vector<int> paren
 	//	prevAssignedIndex[literal] = value;
 	//}
     
-    //cout << "assigning value to variable: "<< literal << ", " << variables[literal].value << endl;
+    cout << "assigning value to variable: "<< literal << ", " << variables[literal].value << endl;
     //Add the node
     implicationGraph.addNode(literal,level, value, parentLiterals);
 	
