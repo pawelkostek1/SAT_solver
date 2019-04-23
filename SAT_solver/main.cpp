@@ -35,7 +35,7 @@ int main() {
 	//tester.test2WatchedLiterals();
     
 	//Read the encoded Enstein's puzzle into variable phi
-	//Formula phi = LoadFormula();
+	Formula phi = LoadFormula();
 	
 	//printAnswer(phi, SAT);
 	/*
@@ -117,12 +117,12 @@ int main() {
 	//////////////////////////////////
 	*/
 	//Solve the puzzle
-	int ans = CDCL(tester.formula);
+	int ans = CDCL(phi);
 
 	
 
 	//Print the answer
-	printAnswer(tester.formula, ans);
+	printAnswer(phi, ans);
 
 	while (1);
 	return 0;
@@ -137,7 +137,7 @@ Formula LoadFormula() {
 	//The following code assume .cnf input file
     int numOfvar = 0, numOfClauses = 0;
 	ifstream File;
-	File.open("puzzle.cnf");
+	File.open("puzzle4.cnf");
 	if (!File) {
 		cout << "Unable to open file puzzle.cnf" << endl;
 	}
@@ -155,8 +155,8 @@ Formula LoadFormula() {
 			}
 			//numOfvar = stoi(line.substr(6, 2));
 			//numOfClauses = stoi(line.substr(9, 2));
-			numOfvar = stoi(line.substr(6, 1));
-			numOfClauses = stoi(line.substr(8, 1));
+			numOfvar = stoi(line.substr(6, 2));
+			numOfClauses = stoi(line.substr(9, 2));
 			cout << "numOfvar: " << numOfvar << " numOfClauses: " << numOfClauses << endl;
 			break;
 		}
@@ -375,7 +375,7 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
                     }
 					//cout << endl;
                     //redo to make nicer
-					//cout << "Implied var: " << implicatedVarId << " with val: " << implicatedVarValue << " with parent size: " << parentVariables.size() << endl;
+					cout << "Implied var: " << implicatedVarId << " with val: " << implicatedVarValue << " with parent size: " << parentVariables.size() << endl;
 					//phi.printVariables();
 				
                     vars.push_back(Variable(implicatedVarId, implicatedVarValue));
@@ -483,16 +483,17 @@ int ConflictAnalysis(Formula &phi, int dl) {
 				int parentId = phi.implicationGraph.nodes[parent].id;
 				int parentLiteralId = phi.implicationGraph.nodes[parent].literalId;
 				int parentValue = phi.implicationGraph.nodes[parent].value;
-				int parentLevel = phi.implicationGraph.nodes[parent].value;
+				int parentLevel = phi.implicationGraph.nodes[parent].level;
 				cout << "parentLiteralId: " << parentLiteralId << " parentValue: " << parentValue << endl;
 				if (parentValue && (find(clause.begin(), clause.end(), -parentLiteralId) == clause.end()))
 					clause.push_back(-parentLiteralId); //learn the opposite value than what was initially assigned
 				else if (!parentValue && (find(clause.begin(), clause.end(), parentLiteralId) == clause.end()))
 					clause.push_back(parentLiteralId);
-
+				cout << "parentLevel" << parentLevel << endl;
 				//Overwrite the parent with the lowest level found
 				if (level > parentLevel) {
 					level = parentLevel;
+					cout << "parentLevel" << parentLevel << endl;
 					lowestLevelParentNodeId = parentId;
 				}
 			}
@@ -500,16 +501,17 @@ int ConflictAnalysis(Formula &phi, int dl) {
 				int parentId = phi.implicationGraph.nodes[parent].id;
 				int parentLiteralId = phi.implicationGraph.nodes[parent].literalId;
 				int parentValue = phi.implicationGraph.nodes[parent].value;
-				int parentLevel = phi.implicationGraph.nodes[parent].value;
+				int parentLevel = phi.implicationGraph.nodes[parent].level;
 				cout << "parentLiteralId: " << parentLiteralId << " parentValue: " << parentValue << endl;
 				if (parentValue && (find(clause.begin(), clause.end(), -parentLiteralId) == clause.end()))
 					clause.push_back(-parentLiteralId); //learn the opposite value than what was initially assigned
 				else if (!parentValue && (find(clause.begin(), clause.end(), parentLiteralId) == clause.end()))
 					clause.push_back(parentLiteralId);
-
+				cout << "parentLevel" << parentLevel << endl;
 				//Overwrite the parent with the lowest level found
 				if (level > parentLevel) {
 					level = parentLevel;
+					cout << "parentLevel" << parentLevel << endl;
 					lowestLevelParentNodeId = parentId;
 				}
 			}
@@ -528,7 +530,7 @@ int ConflictAnalysis(Formula &phi, int dl) {
 	}
 	//while (1);
 	level = phi.implicationGraph.backtrackToLowestLevelParent(lowestLevelParentNodeId, level);
-	return level; //return one level below of the corresponding lowest level root node
+	return level-1; //return one level below of the corresponding lowest level root node
 }
 
 /******************************************************
@@ -542,9 +544,9 @@ void Backtrack(Formula &phi, int beta) {
 	   Using beta that is the level we want to back track to we use the aformentioned data structure to 
 	   unassign all the variables that were set up until the given level beta.
 	*/
-	int initialSize = phi.implicationGraph.levelIndex.size();
+	int initialSize = phi.implicationGraph.levelIndex.size()-1;
 	cout << "initialSize: " << initialSize << "beta: " << beta << endl;
-	for (int i = initialSize; i >= beta; i--) {
+	for (int i = initialSize; i > beta; i--) {
 		vector<int> levelIndexList = phi.implicationGraph.levelIndex[i];
 		cout << "levelIndexList size: " << levelIndexList.size() << endl;
 		phi.implicationGraph.levelIndex.erase(i);
@@ -583,8 +585,9 @@ int CDCL(Formula &phi) {
 			}
 			else {
 				//phi.printFormula();
-				
+				phi.implicationGraph.printGraph();
 				Backtrack(phi, beta);
+				
 				dl = beta;
 				//phi.printFormula();
 			}

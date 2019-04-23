@@ -25,7 +25,7 @@ int Graph::addNode(int literal, int level, int value, vector<Variable> parentVar
         variableIndex[literal] = vector<int>();
     }
 
-
+	cout << "level of the node: " << level << endl;
     levelIndex[level].push_back(literal);
     
 	cout << "levelIndex size: " << levelIndex[level].size() << endl;
@@ -72,6 +72,7 @@ void Graph::removeNodesByLiteralId(int literalId){
 
 int Graph::backtrackToLowestLevelParent(int parentId, int maxLevel) {
 	int level = maxLevel;
+	cout << "maxLevel" << maxLevel;
 	int lowestLevelParentId = parentId;
 	int prevLowestLevelParentId = lowestLevelParentId;
 	list<int> listOfParents = nodes[parentId].parentNodes;
@@ -84,6 +85,7 @@ int Graph::backtrackToLowestLevelParent(int parentId, int maxLevel) {
 		for (auto const& parent : listOfParents) {
 			if (nodes[parent].level < level) {
 				level = nodes[parent].level;
+				cout << "level" << level;
 				
 				lowestLevelParentId = nodes[parent].id;
 			}
@@ -99,22 +101,21 @@ int Graph::backtrackToLowestLevelParent(int parentId, int maxLevel) {
 
 void Graph::printGraph(){
     cout << "GRAPH" << endl;
-    for(unsigned int i = 0; i < levelIndex.size(); i++){
-        cout << "LVL" << i << endl;
-        vector<int> index = levelIndex[i];
-        for(unsigned int j = 0; j < levelIndex.size(); j++){
-            Node node = nodes[j];
-            if (j == 0){
-                cout << node.letter << " : ";
-            }else{
-                cout << node.letter << "( " ;
-               for (auto const& parent : node.parentNodes) {
-                    cout << nodes[parent].letter << ",";
-                }
-                cout << " )" << endl;
-            }
-            
-        }
+    for(auto it: levelIndex){
+        cout << "LVL" << it.first << endl;
+        vector<int> index = it.second;
+        for(unsigned int j = 0; j < index.size(); j++){
+			vector<int> nodeIndeces = variableIndex[index[j]];
+			for (unsigned int k = 0; k < nodeIndeces.size(); k++) {
+				Node node = nodes[nodeIndeces[k]];
+				cout << node.letter << "( ";
+				for (auto const& parent : node.parentNodes) {
+					cout << nodes[parent].letter << ",";
+				}
+				cout << " )" << endl;
+			}
+        }    
+        
     }
 }
 
