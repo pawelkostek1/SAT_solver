@@ -18,12 +18,15 @@ int Graph::addNode(int literal, int level, int value, vector<int> parentLiterals
     //max two nodes per literal
     //we start by checking if the node with the same value exists
     int nodeId = literal;
+    if (value == 0){
+        nodeId = -1*nodeId;
+    }
     
     if(levelIndex.find(level) == levelIndex.end()){
         levelIndex[level] = {};
     }
     if(nodes.find(nodeId) == nodes.end()){
-        nodes[nodeId] = Node(nodeId,abs(literal),value,level,parentLiterals);
+        nodes[nodeId] = Node(nodeId,literal,value,level,parentLiterals);
     }else{
         nodes[nodeId].addParents(parentLiterals);
         if(nodes.find(nodeId*-1) != nodes.end()){

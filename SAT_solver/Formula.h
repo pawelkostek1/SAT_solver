@@ -30,7 +30,6 @@ public:
 	int assignVariable(int literal, int value,int level,vector<int> parentLiterals);
     void unassignVariable(int literal);
 	bool allVariablesAssigned();
-    int removeSingleLiteralVariables();
 	int removeSingleLiteralVariables2();
     void index(int absLiteral);
     void printFormula();

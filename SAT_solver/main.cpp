@@ -254,7 +254,7 @@ void printAnswer(Formula &phi, int ans) {
 int UnitPropagation(Formula &phi, Variable branchVar,int level) {
 
     if (branchVar.literal == 0){
-        return phi.removeSingleLiteralVariables();
+        return phi.removeSingleLiteralVariables2();
     }
 	//phi.printVariables();
 
@@ -345,7 +345,7 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
 				break;
 			}
             else if(phi.variables[clause->pointerToLiteralID(*otherPointer)].value == -1){
-				//cout << "2. I'm inside else if statement." << endl;
+				
                 int newPointer = *currentPointer;
                 for (unsigned int i = 0; i < clause->literals.size(); i++ ){
 					//cout << i << endl;
@@ -354,11 +354,11 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
                     if(i != *otherPointer && i != *currentPointer && phi.variables[literalId].value == -1){
                         if (literal < 0){
                             phi.variables[literalId].addNegativeClause(clauseId);
-                            var.removeNegativeClause(clauseId);
+                            phi.variables[clause->pointerToLiteralID(*currentPointer)].removeNegativeClause(clauseId);
                             
                         }else{
                             phi.variables[literalId].addPositiveClause(clauseId);
-                            var.removePositiveClause(clauseId);
+                            phi.variables[clause->pointerToLiteralID(*currentPointer)].removePositiveClause(clauseId);
                         }
                         newPointer = i;
 						//cout << "newPointer: " << newPointer << endl;
