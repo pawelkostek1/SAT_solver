@@ -98,9 +98,23 @@ int Graph::backtrackToLowestLevelParent(int parentId, int maxLevel) {
 }
 
 void Graph::printGraph(){
+    cout << "GRAPH" << endl;
     for(unsigned int i = 0; i < levelIndex.size(); i++){
-        //cout << "LVL" << i << endl;
-        
+        cout << "LVL" << i << endl;
+        vector<int> index = levelIndex[i];
+        for(unsigned int j = 0; j < levelIndex.size(); j++){
+            Node node = nodes[j];
+            if (j == 0){
+                cout << node.letter << " : ";
+            }else{
+                cout << node.letter << "( " ;
+               for (auto const& parent : node.parentNodes) {
+                    cout << nodes[parent].letter << ",";
+                }
+                cout << " )" << endl;
+            }
+            
+        }
     }
 }
 

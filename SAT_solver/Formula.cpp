@@ -30,7 +30,9 @@ Formula::Formula(vector<Clause> _formula, unordered_map<int,Variable> _variables
     implicationGraph = Graph();
 
 }
-
+Formula::Formula()
+{
+}
 Formula::~Formula()
 {
 }

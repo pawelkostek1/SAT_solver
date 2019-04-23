@@ -1,8 +1,11 @@
 #pragma once
+#include"Formula.h"
 class Verify
 {
-    bool testGraph();
+    
+    bool testGraphAddNode();
 public:
+    Formula formula;
 	Verify();
 	~Verify();
 };

@@ -11,6 +11,7 @@ public:
     int id;
     //this is a reference to the original
     int literalId;
+    char letter;
 	int value;
     int level;
     list<int> parentNodes;

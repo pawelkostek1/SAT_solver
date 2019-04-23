@@ -22,8 +22,13 @@ Verify::Verify()
     clauses.push_back(Clause({1,6}));
     clauses.push_back(Clause({3,1,-6}));
      cout << "Created clauses" << endl;
-    Formula formula = Formula(clauses, variables);
+    
+    formula = Formula(clauses, variables);
+    
+    
     formula.printFormula();
+    
+    testGraphAddNode();
 }
 
 
@@ -33,7 +38,13 @@ Verify::~Verify()
 }
 
 
-bool Verify::testGraph(){
-    
+bool Verify::testGraphAddNode(){
+    Graph graph = formula.implicationGraph;
+    graph.addNode(1, 0, 1, {});
+    graph.addNode(2, 0, 1, {formula.variables[1]});
+    graph.addNode(3, 1, 0, {});
+    graph.addNode(4, 1, 0, {formula.variables[1],formula.variables[2],formula.variables[3]});
+    graph.addNode(5, 2, 0, {formula.variables[1],formula.variables[3],formula.variables[4],formula.variables[5]});
+    graph.printGraph();
     return false;
 }
