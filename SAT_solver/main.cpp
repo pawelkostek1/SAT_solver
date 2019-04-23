@@ -185,6 +185,9 @@ Formula LoadFormula() {
                 //}
                 //count+= 1;
             //}
+            
+            
+            
 			File >> temp;
 		}
         //cout << "clause end" << endl;
@@ -246,14 +249,14 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
 	//phi.printVariables();
 
     vector<Variable> vars = vector<Variable>();
-	vector< vector<Variable> > parents = vector<vector<Variable> >();
+	vector< vector<int> > parents = vector<vector<int> >();
     vars.push_back(branchVar);
-	parents.push_back(vector<Variable>());
+	parents.push_back(vector<int>());
 	//phi.printFormula();
     while((!phi.allVariablesAssigned() && (vars.size() > 0)) || vars.size() > 0){
         //we need assign the
         Variable var = vars.front();
-		vector<Variable> parent = parents.front();
+		vector<int> parent = parents.front();
 		int assignmentResult = phi.assignVariable(var.literal, var.value, level, parent);
 		//phi.printVariables();
 		//cout << "got here" << endl;
@@ -313,18 +316,18 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
 				//phi.printVariables();
 				//clause->printClause();
 
-				vector<Variable> parentVariables = vector<Variable>();
+				/*vector<Variable> parentVariables = vector<Variable>();
 				for (unsigned int i = 0; i < parentLiterals.size(); i++) {
 					//cout << parentLiterals[i] << " ";
 					parentVariables.push_back(phi.variables[parentLiterals[i]]);
-				}
+				}*/
 				//cout << endl;
 				//redo to make nicer
-				cout << "Implied conflict: " << implicatedVarId << " with val: " << implicatedVarValue << " with parent size: " << parentVariables.size() << endl;
+				//cout << "Implied conflict: " << implicatedVarId << " with val: " << implicatedVarValue << " with parent size: " << parentVariables.size() << endl;
 				//phi.printVariables();
 
 				vars.insert(vars.begin(), Variable(implicatedVarId, implicatedVarValue));
-				parents.insert(parents.begin(), parentVariables);
+				parents.insert(parents.begin(), parentLiterals);
 				//the other pointer is true and so we should move it to that pointers
 				//return CONFLICT;
 				break;
@@ -364,25 +367,24 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
 					//phi.printVariables();
 					//clause->printClause();
 
-                    vector<Variable> parentVariables = vector<Variable>();
+                    /*vector<Variable> parentVariables = vector<Variable>();
                     for(unsigned int i = 0; i < parentLiterals.size(); i++){
 						//cout << parentLiterals[i] << " ";
                         parentVariables.push_back(phi.variables[parentLiterals[i]]);
-                    }
+                    }*/
 					//cout << endl;
                     //redo to make nicer
 					//cout << "Implied var: " << implicatedVarId << " with val: " << implicatedVarValue << " with parent size: " << parentVariables.size() << endl;
 					//phi.printVariables();
 				
                     vars.push_back(Variable(implicatedVarId, implicatedVarValue));
-					parents.push_back(vector<Variable>(parentVariables));
+					parents.push_back(vector<int>(parentLiterals));
                 }
 
             }
         }
 		phi.print2Watched();
     }
-	cout << "Level index: " << phi.implicationGraph.levelIndex[0].size() << endl;
 	cout << "Finished unit propagation" << endl;
     return NOCONFLICT;
 }
@@ -441,39 +443,30 @@ int ConflictAnalysis(Formula &phi, int dl) {
 
 	We also need to consider the case where the conflict can no longer be resolved, in which case we return UNSAT.
 	*/
-	vector<int> conflictingNodeIndeces = phi.implicationGraph.variableIndex[phi.implicationGraph.ConflictingLiteralId];
+    //TODO
+	vector<int> conflictingNodeIndeces = phi.implicationGraph.failedState.parentNodes;
 	cout << "conflictingNodeIndeces: ";
 	for (unsigned int i = 0; i < conflictingNodeIndeces.size(); i++) {
 		cout << conflictingNodeIndeces[i] << " ";
 	}
 	cout << endl;
-	vector<int> conflictingNodeIndecesPos;
-	vector<int> conflictingNodeIndecesNeg;
+	int conflictingNodeIndecesPos;
+	int conflictingNodeIndecesNeg;
 	for (unsigned int i = 0; i < conflictingNodeIndeces.size(); i++) {
 		if (phi.implicationGraph.nodes[conflictingNodeIndeces[i]].value == 1)
-			conflictingNodeIndecesPos.push_back(conflictingNodeIndeces[i]);
+			conflictingNodeIndecesPos = conflictingNodeIndeces[i];
 		else
-			conflictingNodeIndecesNeg.push_back(conflictingNodeIndeces[i]);
+			conflictingNodeIndecesNeg=conflictingNodeIndeces[i];
 	}
-	cout << "conflictingNodeIndecesPos: ";
-	for (unsigned int i = 0; i < conflictingNodeIndecesPos.size(); i++) {
-		cout << conflictingNodeIndecesPos[i] << " "; 
-	}
-	cout << endl;
-	cout << "conflictingNodeIndecesNeg: ";
-	for (unsigned int i = 0; i < conflictingNodeIndecesNeg.size(); i++) {
-		cout << conflictingNodeIndecesNeg[i] << " ";
-	}
-	cout << endl;
+	
 	//Go through all the combinations of pairs of conflicted nodes
 	//For each pair concatenate the parents of the nodes to form a new clause
 	//Add the learned clause to the original formula
 	int lowestLevelParentNodeId;
-	for (unsigned int i = 0; i < conflictingNodeIndecesPos.size(); i++) {
-		for (unsigned int j = 0; j < conflictingNodeIndecesNeg.size(); j++) {
+	
 			vector<int> clause;
-			list<int> parentPos = phi.implicationGraph.nodes[conflictingNodeIndecesPos[i]].parentNodes;
-			list<int> parentNeg = phi.implicationGraph.nodes[conflictingNodeIndecesNeg[j]].parentNodes;
+			vector<int> parentPos = phi.implicationGraph.nodes[conflictingNodeIndecesPos].parentNodes;
+			vector<int> parentNeg = phi.implicationGraph.nodes[conflictingNodeIndecesNeg].parentNodes;
 			cout << "parentPos size: " << parentPos.size() << " parentNeg size: " << parentNeg.size() << endl;
 			for (auto const& parent : parentPos) {
 				int parentId = phi.implicationGraph.nodes[parent].id;
@@ -520,10 +513,9 @@ int ConflictAnalysis(Formula &phi, int dl) {
 					cout << "OR ";
 			}
 			cout << endl;
-		}
-	}
+
 	//while (1);
-	level = phi.implicationGraph.backtrackToLowestLevelParent(lowestLevelParentNodeId, level);
+    level = phi.implicationGraph.backtrackToLowestLevelParent();
 	return level; //return one level below of the corresponding lowest level root node
 }
 

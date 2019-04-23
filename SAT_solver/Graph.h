@@ -16,15 +16,14 @@ class Graph {
 
 public:
     unordered_map<int,Node> nodes;
-    unordered_map<int,vector<int> > variableIndex;
-    unordered_map<int,vector<int> > levelIndex;
+    unordered_map<int,vector<int>> levelIndex;
 	int ConflictingLiteralId;
 	Graph(); //Constructor
 	~Graph();
-	int addNode(int literal, int level, int value, vector<Variable> parentVariables);
-    void setNodeParents(int nodeId,vector<Variable> parentVariables);
+    Node failedState;
+	int addNode(int literal, int level, int value, vector<int> parentLiterals);
     void removeNodesByLiteralId(int literalId);
-	int backtrackToLowestLevelParent(int parentId, int maxLevel);
+	int backtrackToLowestLevelParent();
     void printGraph();
 };
 

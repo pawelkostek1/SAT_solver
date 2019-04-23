@@ -6,57 +6,45 @@
 using namespace std;
 
 Graph::Graph() {
-	
+    failedState = Node(0,0,0,0,{});
+    levelIndex = {};
 }
 
 Graph::~Graph()
 {
 }
 
-int Graph::addNode(int literal, int level, int value, vector<Variable> parentVariables) {
-    int id = int(nodes.size());
-    nodes[id] = (Node(id,literal,value,level));
-	cout << "levelIndex size: " << levelIndex.size() << endl;
+int Graph::addNode(int literal, int level, int value, vector<int> parentLiterals) {
+    //max two nodes per literal
+    //we start by checking if the node with the same value exists
+    int nodeId = literal;
+    if (value == 0){
+        nodeId = literal*-1;
+    }
     if(levelIndex.find(level) == levelIndex.end()){
-        levelIndex[level] = vector<int>();
+        levelIndex[level] = {};
     }
-	//cout << "================================" << endl;
-    if(variableIndex.find(literal) == variableIndex.end()){
-        variableIndex[literal] = vector<int>();
-    }
-
-
-    levelIndex[level].push_back(literal);
-    
-	cout << "levelIndex size: " << levelIndex[level].size() << endl;
-	//cout << "variableIndex before adding: ";
-	//for (int i = 0; i < variableIndex[literal].size(); i++)
-	//	cout << variableIndex[literal][i] << " ";
-	//cout << endl;
-    variableIndex[literal].push_back(id);
-	//cout << "variableIndex after adding: ";
-	//for (int i = 0; i < variableIndex[literal].size(); i++)
-	//	cout << variableIndex[literal][i] << " ";
-	//cwout << endl;
-	//cout << "================================" << endl;
-    setNodeParents(id,parentVariables);
-    return id;
-}
-void Graph::setNodeParents(int nodeId,vector<Variable> parentVariables){
-    
-    for (unsigned int i = 0; i < parentVariables.size(); i++){
-        int parentId = parentVariables[i].literal;
-        vector<int> parentNodes = variableIndex[parentId];
-        for (unsigned int j = 0; j < parentNodes.size(); j++){
-            int parentNodeId = parentNodes[j];
-			nodes[nodeId].addParent(parentNodeId);
+    if(nodes.find(nodeId) == nodes.end()){
+        nodes[nodeId] = Node(nodeId,literal,value,level,parentLiterals);
+    }else{
+        nodes[nodeId].addParents(parentLiterals);
+        if(nodes.find(nodeId*-1) != nodes.end()){
+            //found a opposite node and thus a conflict
+            failedState.addParents({nodeId,nodeId*-1});
         }
-        
     }
+    levelIndex[level].push_back(nodeId);
+    cout << "NODE:"<<nodes[nodeId].letter<<" (" << nodeId << ") , LEVEL: " << level << " , VALUE: " << value << ", PARENTS: ";
+    for(auto const node:parentLiterals){
+        cout << node << ",";
+    }
+    cout << endl;
+    return nodeId;
 }
+
 
 void Graph::removeNodesByLiteralId(int literalId){
-    for (unsigned int i =0; i < variableIndex[literalId].size(); i++){
+   /* for (unsigned int i =0; i < variableIndex[literalId].size(); i++){
         int nodeId = variableIndex[literalId][i];
         nodes.erase(nodeId);
         
@@ -67,55 +55,34 @@ void Graph::removeNodesByLiteralId(int literalId){
 	cout << "Removed node for literalID: " << literalId << " and node indeces: ";
 	for (int i = 0; i < variableIndex[literalId].size(); i++)
 		cout << variableIndex[literalId][i] << " ";
-	cout << endl;
+	cout << endl;*/
 }
 
-int Graph::backtrackToLowestLevelParent(int parentId, int maxLevel) {
-	int level = maxLevel;
-	int lowestLevelParentId = parentId;
-	int prevLowestLevelParentId = lowestLevelParentId;
-	list<int> listOfParents = nodes[parentId].parentNodes;
-	cout << "Size of listOfParents = " << listOfParents.size()<<endl;
-	//Backtrack to the parent with the lowest level
-	//Runs until the list of parents is empty - the root node was reached
-	while (listOfParents.size() != 0) {
-		cout << "Printing parents for node: " << nodes[parentId].literalId << endl;
-		prevLowestLevelParentId = lowestLevelParentId;
-		for (auto const& parent : listOfParents) {
-			if (nodes[parent].level < level) {
-				level = nodes[parent].level;
-				
-				lowestLevelParentId = nodes[parent].id;
-			}
-			cout << nodes[parent].literalId<<endl;
-		}
-		if (lowestLevelParentId == prevLowestLevelParentId)
-			break;
-		else
-			listOfParents = nodes[lowestLevelParentId].parentNodes;
-	}
+int Graph::backtrackToLowestLevelParent() {
+    int level;
+    for(auto const node:failedState.parentNodes){
+        if (level == NULL){
+            level = nodes[node].level;
+        }else{
+            if (nodes[node].level < level){
+                level = nodes[node].level;
+            }
+        }
+    }
 	return level;
 }
 
 void Graph::printGraph(){
     cout << "GRAPH" << endl;
-    for(unsigned int i = 0; i < levelIndex.size(); i++){
-        cout << "LVL" << i << endl;
-        vector<int> index = levelIndex[i];
-        for(unsigned int j = 0; j < levelIndex.size(); j++){
-            Node node = nodes[j];
-            if (j == 0){
-                cout << node.letter << " : ";
-            }else{
-                cout << node.letter << "( " ;
-               for (auto const& parent : node.parentNodes) {
-                    cout << nodes[parent].letter << ",";
-                }
-                cout << " )" << endl;
-            }
-            
+    for (auto& it: nodes){
+        Node node = nodes[it.first];
+        cout << node.letter << ": ";
+        for(auto const& parent : node.parentNodes){
+            cout << nodes[parent].letter << ",";
         }
+        cout << endl;
     }
+    
 }
 
 

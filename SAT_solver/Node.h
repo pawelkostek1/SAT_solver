@@ -1,6 +1,7 @@
 #pragma once
 #include<list>
 #include<tuple>
+#include<vector>
 using namespace std;
 
 /*
@@ -8,16 +9,17 @@ using namespace std;
 */
 class Node {
 public:
-    int id;
     //this is a reference to the original
+    int id;
     int literalId;
     char letter;
 	int value;
+    
     int level;
-    list<int> parentNodes;
-    Node(int _id, int _literalId, int value, int _level);
+    vector<int> parentNodes;
+    Node(int _id, int _literalId, int value,int level,vector<int>parentLiterals);
 	Node();
     ~Node();
-    void addParent(int nodeId);
+    void addParents(vector<int>parentLiterals);
     void removeParent(int nodeId);
 };

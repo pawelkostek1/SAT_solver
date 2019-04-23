@@ -1,12 +1,13 @@
 #include"Node.h"
 #include"constants.h"
 
-Node::Node(int _id, int _literalId, int _value, int _level) {
+Node::Node(int _id, int _literalId, int _value,int _level,vector<int> parentLiterals) {
     id = _id;
     literalId = _literalId;
 	value = _value;
     level = _level;
     letter = 'A' + _literalId - 1;
+    parentNodes = parentLiterals;
 }
 
 Node::Node()
@@ -17,11 +18,15 @@ Node::~Node()
 {
 }
 
-void Node::addParent(int nodeId){
-    parentNodes.push_back(nodeId);
+void Node::addParents(vector<int>parentLiterals){
+    for(auto const l :parentLiterals){
+        if(find(parentNodes.begin(), parentNodes.end(),l)==parentNodes.end()){
+            parentNodes.push_back(l);
+        }
+    }
 }
 
 void Node::removeParent(int nodeId){
-    parentNodes.remove(nodeId);
+    //parentNodes.remove(nodeId);
 }
 

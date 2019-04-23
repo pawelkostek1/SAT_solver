@@ -27,7 +27,7 @@ public:
     Graph implicationGraph;
 	int getNumOfVar();
 	int getNumOfClauses();
-	int assignVariable(int literal, int value,int level,vector<Variable> parentVariables);
+	int assignVariable(int literal, int value,int level,vector<int> parentLiterals);
     void unassignVariable(int literal);
 	bool allVariablesAssigned();
     int removeSingleLiteralVariables();

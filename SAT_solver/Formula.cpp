@@ -59,7 +59,7 @@ int Formula::getNumOfClauses() {
 	return this->formula.size();
 }
 
-int Formula::assignVariable(int literal, int value, int level, vector<Variable> parentVariables) {
+int Formula::assignVariable(int literal, int value, int level, vector<int> parentLiterals) {
     //if the variable already has a value that is not -1 and does not match the value
     //we want to assign there is a conflict 
     
@@ -79,11 +79,8 @@ int Formula::assignVariable(int literal, int value, int level, vector<Variable> 
     
     //cout << "assigning value to variable: "<< literal << ", " << variables[literal].value << endl;
     //Add the node
-    implicationGraph.addNode(literal,level, value, parentVariables);
-	cout << "Added new node for literal: " << literal <<" with value: "<< value << " with parent size: "<< parentVariables.size() << " and node indeces: ";
-	for (int i = 0; i < implicationGraph.variableIndex[literal].size(); i++)
-		cout << implicationGraph.variableIndex[literal][i] << " ";
-	cout << endl;
+    implicationGraph.addNode(literal,level, value, parentLiterals);
+	
     if (variables[literal].value != value && variables[literal].value != -1){
 		implicationGraph.ConflictingLiteralId = literal;
 		cout << "Resulted in conflict for literal " << literal << endl;

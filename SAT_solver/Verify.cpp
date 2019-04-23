@@ -41,10 +41,12 @@ Verify::~Verify()
 bool Verify::testGraphAddNode(){
     Graph graph = formula.implicationGraph;
     graph.addNode(1, 0, 1, {});
-    graph.addNode(2, 0, 1, {formula.variables[1]});
+    graph.addNode(2, 0, 1, {1});
     graph.addNode(3, 1, 0, {});
-    graph.addNode(4, 1, 0, {formula.variables[1],formula.variables[2],formula.variables[3]});
-    graph.addNode(5, 2, 0, {formula.variables[1],formula.variables[3],formula.variables[4],formula.variables[5]});
+   
+    graph.addNode(4, 1, 0, {-5,2,-3});
+    graph.addNode(5, 2, 0, {});
+    graph.addNode(6, 2, 0, {1,-4,-5});
     graph.printGraph();
     return false;
 }
