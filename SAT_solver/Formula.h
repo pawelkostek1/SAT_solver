@@ -19,6 +19,7 @@ public:
 	unordered_map<int, Variable> variables;
     list<int> assignedIndex;
     list<int> unassignedIndex;
+	vector<int> prevAssignedIndex;
     unordered_map<int, vector<int> > clausesIndexes;
 	Formula(vector<Clause> _F,unordered_map<int, Variable>);
 	~Formula();

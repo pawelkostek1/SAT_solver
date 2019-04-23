@@ -8,6 +8,7 @@ Formula::Formula(vector<Clause> _formula, unordered_map<int,Variable> _variables
 {
     variables = _variables;
 	formula = _formula;
+	prevAssignedIndex = vector<int>(_variables.size(), -1);
     //initialise the unnasignedIndex
     for (int i = 1; i <= variables.size();i++){
         unassignedIndex.push_back(i);
@@ -61,11 +62,14 @@ int Formula::assignVariable(int literal, int value, int level, vector<Variable> 
         assignedIndex.push_back(literal);
         variables[literal].value = value;
     }
+	if (prevAssignedIndex[literal] == -1) {
+		prevAssignedIndex[literal] = value;
+	}
     
     //cout << "assigning value to variable: "<< literal << ", " << variables[literal].value << endl;
     //Add the node
     implicationGraph.addNode(literal,level, value, parentVariables);
-	cout << "Added new node for literal: " << literal <<" with value: "<< variables[literal].value << " and node indeces: ";
+	cout << "Added new node for literal: " << literal <<" with value: "<< value << " with parent size: "<< parentVariables.size() << " and node indeces: ";
 	for (int i = 0; i < implicationGraph.variableIndex[literal].size(); i++)
 		cout << implicationGraph.variableIndex[literal][i] << " ";
 	cout << endl;
@@ -137,7 +141,7 @@ int Formula::removeSingleLiteralVariables(){
     int i = 0;
     while(approvedClauses < formula.size()){
         //if a clause has one literal add it to the variablesWithOneLiteral vector
-        printFormula();
+        //printFormula();
         vector<int> clause = formula[i].literals;
         cout << "Checking clause: " << i << endl;
         if(clause.size() == 1){
@@ -181,7 +185,19 @@ int Formula::removeSingleLiteralVariables(){
                 else if (compPosition != clause.end()){
                     //Delete the complement of the literal
                     clause.erase(compPosition);
-                    formula[i] = clause;
+					
+                    formula[i] = Clause(clause);
+					
+					//if (literal < 0) {
+					//	auto it = find(variables[abs(literal)].negativeClauses.begin(), variables[abs(literal)].negativeClauses.end(), i);
+					//	variables[abs(literal)].negativeClauses.erase(it);
+					//}
+					//else {
+					//	auto it = find(variables[abs(literal)].postiveClauses.begin(), variables[abs(literal)].postiveClauses.end(), i);
+					//
+					//	variables[abs(literal)].postiveClauses.erase(it);
+					//}
+
                     incrementI = 0;
                     incrementA = approvedClauses*-1;
                     
@@ -211,8 +227,17 @@ int Formula::removeSingleLiteralVariables(){
     for(int unsigned i = 0; i < formula.size(); i++){
         vector<int> clause = formula[i].literals;
         cout << "ClauseId: " << i << endl;
+		int count = 0;
         for(int unsigned j = 0; j < clause.size(); j++){
             cout << "\tLiteral: " << clause[j] << endl;
+			//if (count < 2){
+			//	if (clause[j] < 0){
+			//		variables[abs(clause[j])].addNegativeClause(i);
+			//	}else{
+			//		variables[abs(clause[j])].addPositiveClause(i);
+			//	}
+			//	count+= 1;
+			//}
         }
     }
     

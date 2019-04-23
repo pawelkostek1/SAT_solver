@@ -10,8 +10,8 @@ using namespace std;
 class Clause {
     
 public:
-    vector<int> literals;
-    vector<int> literalIds;
+	vector<int> literals;
+	vector<int> literalIds;
     int p1;
     int p2;
     Clause(vector<int> _value); //Constructor
