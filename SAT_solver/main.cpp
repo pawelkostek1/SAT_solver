@@ -268,9 +268,11 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
         
         Variable var = vars.front();
 		vector<int> parent = parents.front();
+        
 		int assignmentResult = phi.assignVariable(var.literal, var.value, level, parent);
 		//phi.printVariables();
 		//cout << "got here" << endl;
+        cout << "Considering variable: " << var.literal << endl;
 		cout << "Considering variable: " << var.letter << endl;
 		vars.erase(vars.begin(), vars.begin() + 1);
 		parents.erase(parents.begin(), parents.begin() + 1);
@@ -354,10 +356,14 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
                     if(i != *otherPointer && i != *currentPointer && phi.variables[literalId].value == -1){
                         if (literal < 0){
                             phi.variables[literalId].addNegativeClause(clauseId);
-                            phi.variables[clause->pointerToLiteralID(*currentPointer)].removeNegativeClause(clauseId);
                             
                         }else{
                             phi.variables[literalId].addPositiveClause(clauseId);
+                        }
+                        if (var.value < 0){
+                            phi.variables[clause->pointerToLiteralID(*currentPointer)].removeNegativeClause(clauseId);
+                            
+                        }else{
                             phi.variables[clause->pointerToLiteralID(*currentPointer)].removePositiveClause(clauseId);
                         }
                         newPointer = i;
@@ -552,8 +558,8 @@ void Backtrack(Formula &phi, int beta) {
 		cout << "levelIndexList size: " << levelIndexList.size() << endl;
 		phi.implicationGraph.levelIndex.erase(i);
 		for (unsigned int j = 0; j < levelIndexList.size(); j++) {
-			phi.unassignVariable(levelIndexList[j]);
-			phi.implicationGraph.removeNodesByLiteralId(levelIndexList[j]);
+			phi.unassignVariable(abs(levelIndexList[j]));
+			phi.implicationGraph.removeNodesByLiteralId(abs(levelIndexList[j]));
 		}
 	}
 }

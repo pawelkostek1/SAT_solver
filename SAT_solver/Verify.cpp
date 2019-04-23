@@ -54,6 +54,7 @@ bool Verify::testGraphAddNode(){
 
 bool Verify::testUnitPropagation(){
     Formula formula = createFormula();
+    
     return false;
 }
 
