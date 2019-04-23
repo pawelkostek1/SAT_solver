@@ -22,6 +22,7 @@ using namespace std;
 Formula LoadFormula();
 void printAnswer(Formula &phi, int ans);
 int UnitPropagation(Formula &phi, Variable branchVar,int level);
+Variable RandomBranchingVariable(Formula &phi);
 Variable PickBranchingVariable(Formula &phi);
 int ConflictAnalysis(Formula &phi, int dl);
 void Backtrack(Formula &phi, int beta);
@@ -137,7 +138,7 @@ Formula LoadFormula() {
 	//The following code assume .cnf input file
     int numOfvar = 0, numOfClauses = 0;
 	ifstream File;
-	File.open("puzzle4.cnf");
+	File.open("puzzle6.cnf");
 	if (!File) {
 		cout << "Unable to open file puzzle.cnf" << endl;
 	}
@@ -172,13 +173,16 @@ Formula LoadFormula() {
         phi.push_back(Clause());
         //int count = 0;
         while (temp) {
-			phi[i].literals.push_back(temp);
-            phi[i].literalIds.push_back(abs(temp));
-            auto literal = phi[i].literals[phi[i].literals.size()-1];
-            auto it = variables.find(abs(literal));
-            if (it == variables.end()){
-                variables[abs(literal)] = Variable(abs(literal),-1);
-            }
+			if (find(phi[i].literals.begin(), phi[i].literals.end(), temp) == phi[i].literals.end()) {
+				phi[i].literals.push_back(temp);
+				phi[i].literalIds.push_back(abs(temp));
+				auto literal = phi[i].literals[phi[i].literals.size() - 1];
+				auto it = variables.find(abs(literal));
+				if (it == variables.end()) {
+					variables[abs(literal)] = Variable(abs(literal), -1);
+				}
+			}
+
            // cout << literal << ":" << i << endl;
             //if (count < 2){
                 
@@ -250,7 +254,9 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
 	//phi.printVariables();
 
     vector<Variable> vars = vector<Variable>();
+	vector<int> varsId = vector<int>();
 	vector< vector<Variable> > parents = vector<vector<Variable> >();
+	varsId.push_back(branchVar.literal);
     vars.push_back(branchVar);
 	parents.push_back(vector<Variable>());
 	//phi.printFormula();
@@ -273,9 +279,9 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
         //clauses that comp of assigned variable
         vector<int> clauses;
         if (var.value == 0){
-            clauses = phi.variables[var.literal].postiveClauses;
+            clauses = phi.variables[abs(var.literal)].postiveClauses;
         }else{
-            clauses = phi.variables[var.literal].negativeClauses;
+            clauses = phi.variables[abs(var.literal)].negativeClauses;
         }
 		cout << "clauses size: " << clauses.size() << endl;
         for (unsigned int i=0; i< clauses.size(); i++){
@@ -320,7 +326,7 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
 				vector<Variable> parentVariables = vector<Variable>();
 				for (unsigned int i = 0; i < parentLiterals.size(); i++) {
 					//cout << parentLiterals[i] << " ";
-					parentVariables.push_back(phi.variables[parentLiterals[i]]);
+					parentVariables.push_back(phi.variables[abs(parentLiterals[i])]);
 				}
 				//cout << endl;
 				//redo to make nicer
@@ -343,12 +349,17 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
                     if(i != *otherPointer && i != *currentPointer && phi.variables[literalId].value == -1){
                         if (literal < 0){
                             phi.variables[literalId].addNegativeClause(clauseId);
-                            var.removeNegativeClause(clauseId);
                             
                         }else{
                             phi.variables[literalId].addPositiveClause(clauseId);
-                            var.removePositiveClause(clauseId);
                         }
+						if (var.value < 0) {
+							phi.variables[abs(var.literal)].removeNegativeClause(clauseId);
+
+						}
+						else {
+							phi.variables[abs(var.literal)].removePositiveClause(clauseId);
+						}
                         newPointer = i;
 						//cout << "newPointer: " << newPointer << endl;
                         break;
@@ -371,15 +382,17 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
                     vector<Variable> parentVariables = vector<Variable>();
                     for(unsigned int i = 0; i < parentLiterals.size(); i++){
 						//cout << parentLiterals[i] << " ";
-                        parentVariables.push_back(phi.variables[parentLiterals[i]]);
+                        parentVariables.push_back(phi.variables[abs(parentLiterals[i])]);
                     }
 					//cout << endl;
                     //redo to make nicer
 					cout << "Implied var: " << implicatedVarId << " with val: " << implicatedVarValue << " with parent size: " << parentVariables.size() << endl;
 					//phi.printVariables();
-				
-                    vars.push_back(Variable(implicatedVarId, implicatedVarValue));
-					parents.push_back(vector<Variable>(parentVariables));
+					if (find(varsId.begin(), varsId.end(), implicatedVarId) == varsId.end()) {
+						varsId.push_back(implicatedVarId);
+						vars.push_back(Variable(implicatedVarId, implicatedVarValue));
+						parents.push_back(vector<Variable>(parentVariables));
+					}
                 }
 
             }
@@ -390,7 +403,16 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
 	cout << "Finished unit propagation" << endl;
     return NOCONFLICT;
 }
-
+Variable RandomBranchingVariable(Formula &phi) {
+	int brachingVar = 1 + rand() % phi.variables.size();
+	cout << "pick branching value: " << phi.prevAssignedIndex[brachingVar] << endl;
+	if (phi.prevAssignedIndex[brachingVar] == 0)
+		return Variable(brachingVar, 1);
+	else if (phi.prevAssignedIndex[brachingVar] == 1)
+		return Variable(brachingVar, 0);
+	else
+		return Variable(brachingVar, rand() % 2);
+}
 /******************************************************
 * @description: Function that implements heuristics how variables are being picked for further search
 *				using unit propagation. Currently the function implements Variable State Decaying Sum (VSIDS).
@@ -475,7 +497,7 @@ int ConflictAnalysis(Formula &phi, int dl) {
 	int lowestLevelParentNodeId;
 	for (unsigned int i = 0; i < conflictingNodeIndecesPos.size(); i++) {
 		for (unsigned int j = 0; j < conflictingNodeIndecesNeg.size(); j++) {
-			vector<int> clause;
+			vector<int> clause = vector<int>();
 			list<int> parentPos = phi.implicationGraph.nodes[conflictingNodeIndecesPos[i]].parentNodes;
 			list<int> parentNeg = phi.implicationGraph.nodes[conflictingNodeIndecesNeg[j]].parentNodes;
 			cout << "parentPos size: " << parentPos.size() << " parentNeg size: " << parentNeg.size() << endl;
@@ -516,6 +538,31 @@ int ConflictAnalysis(Formula &phi, int dl) {
 				}
 			}
 			phi.formula.push_back(Clause(clause));
+
+			if (clause.size() > 1) 
+			{
+				if (clause[0] < 0) {
+					phi.variables[abs(clause[0])].addNegativeClause(phi.formula.size() - 1);
+				}
+				else {
+					phi.variables[abs(clause[0])].addPositiveClause(phi.formula.size() - 1);
+				}
+				if (clause[1] < 0) {
+					phi.variables[abs(clause[1])].addNegativeClause(phi.formula.size() - 1);
+				}
+				else {
+					phi.variables[abs(clause[1])].addPositiveClause(phi.formula.size() - 1);
+				}
+			}
+			else if(clause.size() != 0){
+				if (clause[0] < 0) {
+					phi.variables[abs(clause[0])].addNegativeClause(phi.formula.size() - 1);
+				}
+				else {
+					phi.variables[abs(clause[0])].addPositiveClause(phi.formula.size() - 1);
+				}
+			}
+
 			phi.bumpActivities(clause);
 			cout << "Learned clause: ";
 			for (unsigned int i = 0; i < clause.size(); i++) {
@@ -551,7 +598,7 @@ void Backtrack(Formula &phi, int beta) {
 		cout << "levelIndexList size: " << levelIndexList.size() << endl;
 		phi.implicationGraph.levelIndex.erase(i);
 		for (unsigned int j = 0; j < levelIndexList.size(); j++) {
-			phi.unassignVariable(levelIndexList[j]);
+			phi.unassignVariable(abs(levelIndexList[j]));
 			phi.implicationGraph.removeNodesByLiteralId(levelIndexList[j]);
 		}
 	}
@@ -571,7 +618,7 @@ int CDCL(Formula &phi) {
 	phi.printFormula();
 	phi.printIndex();
 	while (!phi.allVariablesAssigned()) {
-		Variable branchVar = PickBranchingVariable(phi);
+		Variable branchVar = RandomBranchingVariable(phi);
 		cout << "***********************************************" << endl;
         cout << "Picking a branching variable: " << branchVar.letter << " value: " << branchVar.value << endl;
 
@@ -587,7 +634,7 @@ int CDCL(Formula &phi) {
 				//phi.printFormula();
 				phi.implicationGraph.printGraph();
 				Backtrack(phi, beta);
-				
+				phi.implicationGraph.printGraph();
 				dl = beta;
 				//phi.printFormula();
 			}

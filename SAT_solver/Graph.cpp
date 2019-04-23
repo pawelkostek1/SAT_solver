@@ -101,9 +101,9 @@ int Graph::backtrackToLowestLevelParent(int parentId, int maxLevel) {
 
 void Graph::printGraph(){
     cout << "GRAPH" << endl;
-    for(auto it: levelIndex){
-        cout << "LVL" << it.first << endl;
-        vector<int> index = it.second;
+    for(unsigned int i = 0; i < levelIndex.size(); i++){
+        cout << "LVL" << i << endl;
+        vector<int> index = levelIndex[i];
         for(unsigned int j = 0; j < index.size(); j++){
 			vector<int> nodeIndeces = variableIndex[index[j]];
 			for (unsigned int k = 0; k < nodeIndeces.size(); k++) {
