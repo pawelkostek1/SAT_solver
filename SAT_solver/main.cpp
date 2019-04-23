@@ -31,9 +31,11 @@ int main() {
     
     //TESTING TIME
     Verify tester = Verify();
+
+	//tester.test2WatchedLiterals();
     
 	//Read the encoded Enstein's puzzle into variable phi
-	Formula phi = LoadFormula();
+	//Formula phi = LoadFormula();
 	
 	//printAnswer(phi, SAT);
 	/*
@@ -115,10 +117,12 @@ int main() {
 	//////////////////////////////////
 	*/
 	//Solve the puzzle
-	int ans = CDCL(phi);
+	int ans = CDCL(tester.formula);
+
+	
 
 	//Print the answer
-	printAnswer(phi, ans);
+	printAnswer(tester.formula, ans);
 
 	while (1);
 	return 0;
@@ -380,7 +384,7 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
 
             }
         }
-		phi.print2Watched();
+		phi.print2Watched(phi.assignedIndex);
     }
 	cout << "Level index: " << phi.implicationGraph.levelIndex[0].size() << endl;
 	cout << "Finished unit propagation" << endl;

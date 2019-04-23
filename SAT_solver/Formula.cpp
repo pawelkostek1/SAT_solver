@@ -33,6 +33,7 @@ Formula::Formula(vector<Clause> _formula, unordered_map<int,Variable> _variables
 >>>>>>> 5f93ad95cdcd60a13382788eefa6716093dd79ec
 */
     implicationGraph = Graph();
+	//removeSingleLiteralVariables();
 
 }
 Formula::Formula()
@@ -411,10 +412,10 @@ void Formula::decayActivities() {
 	}
 }
 
-void Formula::print2Watched() {
+void Formula::print2Watched(list<int> literalIndeces) {
 	cout << "|---------------------------------------|---|--------------------------------------|" << endl;
 
-		for (auto& it : assignedIndex) {
+		for (auto& it : literalIndeces) {
 			
 			for (int i = 0; i < max(variables[it].postiveClauses.size(), variables[it].negativeClauses.size()); i++) {
 				if (i<variables[it].postiveClauses.size()) {
@@ -425,16 +426,17 @@ void Formula::print2Watched() {
 
 					for (unsigned int j = 0; j < clause.literals.size(); j++) {
 						if (clause.literals[j] < 0) {
-							s << "NOT " << abs(clause.literals[j]);
+							s << "NOT " << variables[abs(clause.literals[j])].letter;
 						}
 						else {
-							s << clause.literals[j];
+							s << variables[clause.literals[j]].letter;
 						}
 
 						if (j < clause.literals.size() - 1) {
 							s << " OR ";
 						}
 					}
+					s << "(" << variables[it].postiveClauses[i] << ")";
 					cout << s.str();
 				}
 				else {
@@ -457,17 +459,19 @@ void Formula::print2Watched() {
 
 					for (unsigned int j = 0; j < clause.literals.size(); j++) {
 						if (clause.literals[j] < 0) {
-							s << "NOT " << abs(clause.literals[j]);
+							s << "NOT " << variables[abs(clause.literals[j])].letter;
 						}
 						else {
-							s << clause.literals[j];
+							s << variables[clause.literals[j]].letter;
 						}
 
 						if (j < clause.literals.size() - 1) {
 							s << " OR ";
 						}
 					}
+					s << "(" << variables[it].negativeClauses[i] << ")";
 					s << "|\n";
+					
 					cout << s.str();
 				}
 				else {

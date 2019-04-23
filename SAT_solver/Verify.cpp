@@ -26,8 +26,8 @@ Verify::Verify()
     formula = Formula(clauses, variables);
     
     
-    formula.printFormula();
-    
+	formula.printFormula();
+	formula.printFormula();
     testGraphAddNode();
 }
 
@@ -50,8 +50,55 @@ bool Verify::testGraphAddNode(){
 }
 
 bool Verify::test2WatchedLiterals() {
-	cout << "Checking the intilial state" << endl;
+	struct state {
+		int literal;
+		vector<int> negativeClauses;
+		vector<int> postiveClauses;
+	};
+	cout << "Checking the initial state" << endl;
+	state initialState[6];
+	initialState[0].literal = 1;
+	initialState[0].negativeClauses = vector<int>{ 1,4 };
+	initialState[0].postiveClauses = vector<int>{ 0,5,6 };
+	initialState[1].literal = 2;
+	initialState[1].negativeClauses = vector<int>();
+	initialState[1].postiveClauses = vector<int>{ 0 };
+	initialState[2].literal = 3;
+	initialState[2].negativeClauses = vector<int>{ 1 };
+	initialState[2].postiveClauses = vector<int>{ 6 };
+	initialState[3].literal = 4;
+	initialState[3].negativeClauses = vector<int>();
+	initialState[3].postiveClauses = vector<int>{ 3 };
+	initialState[4].literal = 5;
+	initialState[4].negativeClauses = vector<int>{ 2 };
+	initialState[4].postiveClauses = vector<int>{ 3 };
+	initialState[5].literal = 6;
+	initialState[5].negativeClauses = vector<int>{ 4 };
+	initialState[5].postiveClauses = vector<int>{ 2,5 };
+	
+	formula.print2Watched(list<int>{1,2,3,4,5,6});
 
+	bool result = true;
+	for (auto it : formula.variables) {
+		for (int i = 0; i < initialState[it.first - 1].negativeClauses.size(); i++) {
+			cout << initialState[it.first - 1].negativeClauses[i] << " " << it.second.negativeClauses[i] << endl;
+			//if(initialState[it.first - 1].negativeClauses[i] != it.second.negativeClauses[i])
+				//result = false;
+		}
+		for (int i = 0; i < initialState[it.first - 1].postiveClauses.size(); i++) {
+			cout << initialState[it.first - 1].postiveClauses[i] << " " << it.second.postiveClauses[i] << endl;
+			//if (initialState[it.first - 1].postiveClauses[i] != it.second.postiveClauses[i])
+				//result = false;
+		}
+		if (initialState[it.first - 1].negativeClauses == it.second.negativeClauses && initialState[it.first - 1].postiveClauses == it.second.postiveClauses)
+			continue;
+		else
+			result = false;
+	}
+	if (result)
+		cout << "Sccesfully passed on the initial state test case!" << endl;
+	else
+		cout << "Failed at the initial state test case." << endl;
 
-	return false;
+	return result;
 }

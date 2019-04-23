@@ -2,13 +2,12 @@
 #include"Formula.h"
 class Verify
 {
-
-    bool testGraph();
-	bool test2WatchedLiterals();
-    bool testGraphAddNode();
-
+	
 public:
-    Formula formula;
+	Formula formula;
+	bool test2WatchedLiterals();
+	bool testGraphAddNode();
+	bool testGraph();
 	Verify();
 	~Verify();
 };
