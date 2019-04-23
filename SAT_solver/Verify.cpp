@@ -37,3 +37,10 @@ bool Verify::testGraph(){
     
     return false;
 }
+
+bool Verify::test2WatchedLiterals() {
+	cout << "Checking the intilial state" << endl;
+
+
+	return false;
+}
