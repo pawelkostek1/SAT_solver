@@ -37,6 +37,7 @@ public:
     void printIndex();
     void addVariable(int absLiteral,int value);
     void removeVariable(int absLiteral);
+	void print2Watched();
 
 	void bumpActivities(vector<int> learnedClauseVars);
 	void decayActivities();
