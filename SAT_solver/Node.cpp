@@ -6,6 +6,7 @@ Node::Node(int _id, int _literalId, int _value, int _level) {
     literalId = _literalId;
 	value = _value;
     level = _level;
+    letter = 'A' + _literalId - 1;
 }
 
 Node::Node()

@@ -22,6 +22,7 @@ public:
 	vector<int> prevAssignedIndex;
     unordered_map<int, vector<int> > clausesIndexes;
 	Formula(vector<Clause> _F,unordered_map<int, Variable>);
+    Formula();
 	~Formula();
     Graph implicationGraph;
 	int getNumOfVar();
