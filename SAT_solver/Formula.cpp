@@ -19,25 +19,16 @@ Formula::Formula(vector<Clause> _formula, unordered_map<int,Variable> _variables
         unassignedIndex.push_back(i);
     }
     
-	//Can optimize later by sorting it while the clauses are added to the formula
-	//!!!! Comment out sorting for now as it shuffles the indeces of the clauses
-    //sort(formula.begin(), formula.end(), [](const Clause & a, const Clause & b){ return a.literals.size() < b.literals.size(); });
-/*
-<<<<<<< HEAD
-=======
-    for (int i = 1; i <= _numOfvar; i++) {
-        cout << "Adding var: " << i <<" = "<< (char)('A' + i - 1) << "." << endl;
-        addVariable(i,-1);
-    }
-	cout << "Formula initialized." << endl<<endl;
->>>>>>> 5f93ad95cdcd60a13382788eefa6716093dd79ec
-*/
     implicationGraph = Graph();
 	//removeSingleLiteralVariables();
-
 }
 Formula::Formula()
 {
+    formula = vector<Clause>();
+    variables = unordered_map<int,Variable>();
+    //Not sure what this does yet
+    prevAssignedIndex = vector<int>(variables.size(), -1);
+    implicationGraph = Graph();
 }
 Formula::~Formula()
 {
@@ -60,95 +51,154 @@ int Formula::getNumOfClauses() {
 	return this->formula.size();
 }
 
-int Formula::assignVariable(int literal, int value, int level, vector<int> parentLiterals) {
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+////////////////////////////CLAUSE GETTER/SETTER//////////////////////////
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+
+void Formula::addClause(vector<int> clause,bool allowNewVariables){
+    Clause c = Clause(clause);
+    
+    for (auto literalId:c.literalIds){
+        auto it = variables.find(literalId);
+        if (it == variables.end()){
+            if (allowNewVariables){
+                addVariable(literalId);
+            }else{
+                throw "NOT ALLOWED TO ADD NEW VARIABLES";
+            }
+            
+        }
+    }
+    int cId = formula.size();
+    formula.push_back(c);
+   
+    changeWatchedLiteral(cId, -1, 0);
+    changeWatchedLiteral(cId, -1, 1);
+    
+    
+    
+}
+
+Clause Formula::getClause(int clauseId){
+    if (clauseId >= 0 && clauseId < formula.size()){
+        return formula[clauseId];
+    }else{
+        throw "TRYING TO ACCESS CLAUSE WITH FAULTY CLAUSE ID";
+    }
+}
+
+
+
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////VARIABLE GETTER/SETTER//////////////////////////
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+void Formula::addVariable(int literalId){
+    variables[literalId] = Variable(literalId,-1);
+    unassignedIndex.push_back(literalId);
+    prevAssignedIndex.push_back(-1);
+}
+Variable Formula::getVariable(int literalId){
+    auto const it = variables.find(literalId);
+    if (it != variables.end()){
+        return variables[literalId];
+    }else{
+        throw "TRYING TO ACCESS VARIABLE THAT IS NOT SET";
+    }
+}
+
+unordered_map<int,Variable> Formula::getVariables(){
+    return variables;
+}
+
+
+
+void Formula::removeClauseFromVariableIndex(int literalId,int clauseId,bool negativeIndex){
+    Variable v = getVariable(literalId);
+    if (negativeIndex){
+        v.removeNegativeClause(clauseId);
+    }else{
+        v.removePositiveClause(clauseId);
+    }
+    variables[literalId] = v;
+    
+}
+void Formula::addClauseToVariableIndex(int literalId,int clauseId,bool negativeIndex){
+    Variable v = getVariable(literalId);
+    if (negativeIndex){
+        v.addNegativeClause(clauseId);
+    }else{
+        v.addPositiveClause(clauseId);
+    }
+    variables[literalId] = v;
+}
+void Formula::changeWatchedLiteral(int clauseId,int currentRelativeLiteralId,int newRelativeLiteralId){
+    Clause c = getClause(clauseId);
+    int candidateLiteral = c.literals[newRelativeLiteralId];
+    int candidateAbsoluteLiteralId = c.pointerToLiteralID(newRelativeLiteralId);
+    addClauseToVariableIndex(candidateAbsoluteLiteralId,clauseId,candidateLiteral < 0);
+    if(currentRelativeLiteralId >= 0){
+        int currentLiteral = c.literals[currentRelativeLiteralId];
+        int currentAbsoluteLiteralId = c.pointerToLiteralID(currentRelativeLiteralId);
+        removeClauseFromVariableIndex(currentAbsoluteLiteralId,clauseId,currentLiteral < 0);
+    }
+    
+}
+
+
+int Formula::assignVariable(int literalId, int value, int level, vector<int> parentLiterals) {
     //if the variable already has a value that is not -1 and does not match the value
     //we want to assign there is a conflict 
-    
+    Variable v = getVariable(literalId);
     //variable has not been assigned a value yet or its the same value at a different level
-	cout << "assignigning  variable value:" << variables[literal].value << endl;
-    if(variables[literal].value == -1){
-        unassignedIndex.remove(literal);
+    if(v.value == -1){
+        unassignedIndex.remove(literalId);
 		cout << "assignedIndex before size: " << assignedIndex.size() << " ";
-        assignedIndex.push_back(literal);
+        assignedIndex.push_back(literalId);
 		cout << "assignedIndex after size: " << assignedIndex.size() << endl;
-        variables[literal].value = value;
-		cout << "Assigned new variable: " << literal << endl;
+        v.value = value;
+		cout << "Assigned new variable: " << literalId << endl;
     }
 	//if (prevAssignedIndex[literal] == -1) {
 	//	prevAssignedIndex[literal] = value;
 	//}
     
-    cout << "assigning value to variable: "<< literal << ", " << variables[literal].value << endl;
+    cout << "assigning value to variable: "<< literalId << ", " << v.value << endl;
     //Add the node
-    implicationGraph.addNode(literal,level, value, parentLiterals);
-	
-    if (variables[literal].value != value && variables[literal].value != -1){
-		implicationGraph.ConflictingLiteralId = literal;
-		cout << "Resulted in conflict for literal " << literal << endl;
-        return CONFLICT;
-    }else{
-        return NOCONFLICT;
-    }
-    
+    variables[literalId] = v;
+    return implicationGraph.addNode(literalId,level, value, parentLiterals);
 }
 
-void Formula::unassignVariable(int literal) {
-	cout << "Unassigning literal: " <<literal<< endl;
+void Formula::unassignVariable(int literalId) {
+    Variable v = getVariable(literalId);
+	cout << "Unassigning literal: " <<literalId<< endl;
 	cout << "\tassignedIndex before size: " << assignedIndex.size() << " ";
-    assignedIndex.remove(literal);
+    assignedIndex.remove(literalId);
 	cout << "\tassignedIndex after size: " << assignedIndex.size() << endl;
 	cout << "\tunassignedIndex before size: " << unassignedIndex.size() << " ";
-	if (find(unassignedIndex.begin(), unassignedIndex.end(), literal) == unassignedIndex.end())
+	if (find(unassignedIndex.begin(), unassignedIndex.end(), literalId) == unassignedIndex.end())
 	{
-		unassignedIndex.push_back(literal);
+		unassignedIndex.push_back(literalId);
 	}
     
 	cout << "\tunassignedIndex after size: " << unassignedIndex.size() << endl;
-    variables[literal].value = -1;
+    v.value = -1;
+    variables[literalId] = v;
 }
 
 bool Formula::allVariablesAssigned(){
 	cout << "variables.size: " << variables.size() << " assignedIndex.size(): "<<assignedIndex.size() << " unassignedIndex.size(): " << unassignedIndex.size() << endl;
     return variables.size() == assignedIndex.size();
-}
-
-ImplicationAnalysis Formula::setInferredVariable(int clauseIndex){
-    Clause clause = formula[clauseIndex];
-
-    int unassignedCount = 0;
-    Variable inferredVar = Variable(0,-1);
-    vector<Variable> parentVars = vector<Variable>();
-    for (unsigned int i = 1; i <= clause.literals.size(); i++){
-        int literal = clause.literals[i];
-        int literalId = abs(literal);
-        Variable var = variables[literalId];
-        bool positive = literal > 0;
-        //The intuition here is that if any literal value in the cluse is true we cannot infer any other variable
-        if ((!positive && var.value == 0) || (positive && var.value == 1)){
-            break;
-        }else if (var.value != -1){
-            parentVars.push_back(variables[literalId]);
-        }else if (var.value == -1){
-            //the variable is unnassigned
-            unassignedCount+=1;
-            //If the number of literals that are unassigned in the literals is more than 1 we cannot infer shit
-            if (unassignedCount > 1){
-                break;
-            }else{
-                //since this line only can run once and if the algorithm goes through all literals
-                //variables and only finds one unassigned variable that variable will be stored in
-                //the inferedVar variable.
-                inferredVar.literal = literalId;
-                //To make sure we infer the right value we check to see if the literal is negated or not
-                //if negated the value is set to 0 else it is set to 1
-                inferredVar.value = positive ? 1:0;
-            }
-        }
-    }
-    ImplicationAnalysis result = ImplicationAnalysis();
-    result.target = inferredVar;
-    result.parents = parentVars;
-    return result;
 }
 
 int Formula::removeSingleLiteralVariables2(){
@@ -160,7 +210,6 @@ int Formula::removeSingleLiteralVariables2(){
     int i = 0;
     while(approvedClauses < formula.size()){
         //if a clause has one literal add it to the variablesWithOneLiteral vector
-        printFormula();
         vector<int> clause = formula[i].literals;
         cout << "Checking clause: " << i << endl;
         if(clause.size() == 1){

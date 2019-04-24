@@ -93,7 +93,7 @@ bool Verify::test2WatchedLiterals() {
 	formula.print2Watched(list<int>{1,2,3,4,5,6});
 
 	bool result = true;
-	for (auto it : formula.variables) {
+	for (auto it : formula.getVariables()) {
 		for (int i = 0; i < initialState[it.first - 1].negativeClauses.size(); i++) {
 			cout << initialState[it.first - 1].negativeClauses[i] << " " << it.second.negativeClauses[i] << endl;
 			//if(initialState[it.first - 1].negativeClauses[i] != it.second.negativeClauses[i])

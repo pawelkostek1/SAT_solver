@@ -13,9 +13,9 @@ using namespace std;
 * @description: Graph
 */
 class Graph {
-
-public:
     unordered_map<int,Node> nodes;
+public:
+    
     unordered_map<int,vector<int> > levelIndex;
 	int ConflictingLiteralId;
 	Graph(); //Constructor
@@ -23,7 +23,10 @@ public:
     Node failedState;
 	int addNode(int literal, int level, int value, vector<int> parentLiterals);
     void removeNodesByLiteralId(int literalId);
-	int backtrackToLowestLevelParent();
+	int getBacktrackLevel();
+    void resetFailedState();
     void printGraph();
+    Node getNode(int nodeId);
+    
 };
 

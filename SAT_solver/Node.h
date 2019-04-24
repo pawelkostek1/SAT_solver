@@ -22,4 +22,5 @@ public:
     ~Node();
     void addParents(vector<int>parentLiterals);
     void removeParent(int nodeId);
+    
 };
