@@ -5,6 +5,18 @@
 
 Verify::Verify()
 {
+    
+    
+    
+}
+
+
+Verify::~Verify()
+{
+    
+}
+
+Formula Verify::createFormula(){
     vector<Clause> clauses = vector<Clause>();
     unordered_map<int,Variable> variables = unordered_map<int,Variable>();
     variables[1] = Variable(1,-1);
@@ -21,35 +33,37 @@ Verify::Verify()
     clauses.push_back(Clause({-6,-1,-3,2}));
     clauses.push_back(Clause({1,6}));
     clauses.push_back(Clause({3,1,-6}));
-     cout << "Created clauses" << endl;
+    cout << "Created clauses" << endl;
     
-    formula = Formula(clauses, variables);
-    
-    
-	formula.printFormula();
-	formula.printFormula();
-    testGraphAddNode();
+    return Formula(clauses, variables);
 }
-
-
-Verify::~Verify()
-{
-    
-}
-
-
 bool Verify::testGraphAddNode(){
+    Formula formula = createFormula();
     Graph graph = formula.implicationGraph;
     graph.addNode(1, 0, 1, {});
-    graph.addNode(2, 0, 1, {formula.variables[1]});
+    graph.addNode(2, 0, 1, {1});
     graph.addNode(3, 1, 0, {});
-    graph.addNode(4, 1, 0, {formula.variables[1],formula.variables[2],formula.variables[3]});
-    graph.addNode(5, 2, 0, {formula.variables[1],formula.variables[3],formula.variables[4],formula.variables[5]});
+   
+    graph.addNode(4, 1, 0, {-5,2,-3});
+    graph.addNode(5, 2, 0, {});
+    graph.addNode(6, 2, 0, {1,-4,-5});
     graph.printGraph();
     return false;
 }
 
+
+bool Verify::testUnitPropagation(){
+    Formula formula = createFormula();
+    
+    return false;
+}
+
+
+
+
+
 bool Verify::test2WatchedLiterals() {
+    Formula formula = createFormula();
 	struct state {
 		int literal;
 		vector<int> negativeClauses;
@@ -79,7 +93,7 @@ bool Verify::test2WatchedLiterals() {
 	formula.print2Watched(list<int>{1,2,3,4,5,6});
 
 	bool result = true;
-	for (auto it : formula.variables) {
+	for (auto it : formula.getVariables()) {
 		for (int i = 0; i < initialState[it.first - 1].negativeClauses.size(); i++) {
 			cout << initialState[it.first - 1].negativeClauses[i] << " " << it.second.negativeClauses[i] << endl;
 			//if(initialState[it.first - 1].negativeClauses[i] != it.second.negativeClauses[i])

@@ -1,9 +1,9 @@
 #include "Variable.h"
 #include "vector"
 Variable::Variable(int _literal,int _value) {
-    literal = _literal;
+    literal = abs(_literal);
     value = _value;
-    letter = 'A' + _literal - 1;
+    letter = 'A' + literal - 1;
 	activity = 0.0;
     
 }

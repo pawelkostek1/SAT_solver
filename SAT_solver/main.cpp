@@ -15,6 +15,9 @@
 #include<cmath>
 #include<algorithm>    // std::find
 #include"Verify.h"
+#include <stdlib.h>
+
+#include"curses.h"
 //#include "Verify.h"
 using namespace std;
 
@@ -163,38 +166,21 @@ Formula LoadFormula() {
 		}
 	}
 	//Read the rest of the file containing encoded formula
-	vector<Clause> phi = vector<Clause>();
-    unordered_map<int,Variable> variables = unordered_map<int,Variable>();
-    
+	
+    Formula formula = Formula();
 	int i = 0;
 	while (File) {
 		int temp = 1;
 		File >> temp;
-        phi.push_back(Clause());
         //int count = 0;
+        vector<int> clause = {};
         while (temp) {
-			if (find(phi[i].literals.begin(), phi[i].literals.end(), temp) == phi[i].literals.end()) {
-				phi[i].literals.push_back(temp);
-				phi[i].literalIds.push_back(abs(temp));
-				auto literal = phi[i].literals[phi[i].literals.size() - 1];
-				auto it = variables.find(abs(literal));
-				if (it == variables.end()) {
-					variables[abs(literal)] = Variable(abs(literal), -1);
-				}
-			}
-
-           // cout << literal << ":" << i << endl;
-            //if (count < 2){
-                
-                //if (literal < 0){
-                //    variables[abs(literal)].addNegativeClause(i);
-                //}else{
-                //    variables[abs(literal)].addPositiveClause(i);
-                //}
-                //count+= 1;
-            //}
+            if (find(clause.begin(), clause.end(), temp) == clause.end()){
+                clause.push_back(temp);
+            }
 			File >> temp;
 		}
+        formula.addClause(clause,true);
         //cout << "clause end" << endl;
         
 		i++;
@@ -202,20 +188,10 @@ Formula LoadFormula() {
 			break;
 		}
 	}
-    /*for(int i = 1; i <= variables.size(); i++){
-        for(int j = 0; j < variables[i].negativeClauses.size(); j++){
-            cout << variables[i].negativeClauses[j] << " ";
-        }
-        cout << " :: " << variables[i].letter << " :: ";
-        for(int j = 0; j < variables[i].postiveClauses.size(); j++){
-            cout << variables[i].postiveClauses[j] << " ";
-        }
-        cout << endl;
-    }*/
 
 	File.close();
     
-	return Formula(phi,variables);
+	return formula;
 }
 
 
@@ -234,7 +210,7 @@ void printAnswer(Formula &phi, int ans) {
 	}
 	cout << "The following assignments were found:"<<endl;
 	phi.printVariables();
-	for (auto& it: phi.variables) {
+	for (auto& it: phi.getVariables()) {
 		cout << it.second.letter << "(" << it.second.value << ") ";
 	}
 	//cout << endl << phi.variables.size();
@@ -249,24 +225,30 @@ void printAnswer(Formula &phi, int ans) {
 int UnitPropagation(Formula &phi, Variable branchVar,int level) {
 
     if (branchVar.literal == 0){
-        return phi.removeSingleLiteralVariables();
+        return phi.removeSingleLiteralVariables2();
     }
 	//phi.printVariables();
 
     vector<Variable> vars = vector<Variable>();
+	vector< vector<int> > parents = vector<vector<int> >();
 	vector<int> varsId = vector<int>();
-	vector< vector<Variable> > parents = vector<vector<Variable> >();
-	varsId.push_back(branchVar.literal);
+	
+    varsId.push_back(branchVar.literal);
     vars.push_back(branchVar);
-	parents.push_back(vector<Variable>());
+    
+	parents.push_back(vector<int>());
 	//phi.printFormula();
     while((!phi.allVariablesAssigned() && (vars.size() > 0)) || vars.size() > 0){
         //we need assign the
+        
         Variable var = vars.front();
-		vector<Variable> parent = parents.front();
+		vector<int> parent = parents.front();
+        
 		int assignmentResult = phi.assignVariable(var.literal, var.value, level, parent);
+        
 		//phi.printVariables();
 		//cout << "got here" << endl;
+        cout << "Considering variable: " << var.literal << endl;
 		cout << "Considering variable: " << var.letter << endl;
 		//varsId.erase(varsId.begin(), varsId.begin() + 1);
 		vars.erase(vars.begin(), vars.begin() + 1);
@@ -276,35 +258,41 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
 			//cout << "Level index: " << phi.implicationGraph.levelIndex[1].size() << endl;
 			return CONFLICT;
 		}
-		
+        
+		/////////////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////THIS VARIABLE IS A COPY TO THE REAL ONE INSIDE FORMULA////////////////////
+        /////////////////////////////////////////////////////////////////////////////////////////////
+        Variable assignedVar = phi.getVariable(var.literal);
+        
         //clauses that comp of assigned variable
         vector<int> clauses;
-        if (var.value == 0){
-            clauses = phi.variables[abs(var.literal)].postiveClauses;
+        if (assignedVar.value == 0){
+            clauses = assignedVar.postiveClauses;
         }else{
-            clauses = phi.variables[abs(var.literal)].negativeClauses;
+            clauses = assignedVar.negativeClauses;
         }
 		cout << "clauses size: " << clauses.size() << endl;
         for (unsigned int i=0; i< clauses.size(); i++){
+            
             int clauseId = clauses.at(i);
 			
-            Clause *clause = &phi.formula[clauseId];
+            Clause clause = phi.getClause(clauseId);
 			//cout << "ID of the clause: " << clauseId << ". Size of the clause: " << clause.literals.size() << endl;
 			//clause->printClause();
             //figure out which pointer you are
-            int  *currentPointer = new int;
-            int  *otherPointer = new int;
+            int currentPointer = NULL;
+            int otherPointer = NULL;
 
 			//cout << "clauseId: " << clauseId << endl;
-            if(var.literal == abs(clause->literals[clause->p1]))
+            if(var.literal == abs(clause.literals[clause.p1]))
 			{
                 //this means our variable is p1
-                currentPointer = &clause->p1;
-                otherPointer = &clause->p2;
+                currentPointer = clause.p1;
+                otherPointer = clause.p2;
             }else{
                 //if you ended up here it means your variable pointer is p2
-                currentPointer = &clause->p2;
-                otherPointer = &clause->p1;
+                currentPointer = clause.p2;
+                otherPointer = clause.p1;
             }
 			//cout << "p1: " << clause->p1 << " p2: " << clause->p2 << endl;
 			//cout << "currentPointer: " << currentPointer << endl;
@@ -314,98 +302,63 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
             //at the compliment clauses (aka the clauses that did not satisfy the assignement just made)
 			//for that reason we care only if our other pointer is true since we know the currentPointer value
 			//has to be false
-			if (!clause->evaluate(*otherPointer, phi.variables[clause->pointerToLiteralID(*otherPointer)].value)) {
+            
+            ////////////////////////////////////////////////////////////
+            /////////////////// ACCSSING VARIABLE COPY /////////////////
+            ////////////////////////////////////////////////////////////
+            Variable otherPointerVariable = phi.getVariable(clause.pointerToLiteralID(otherPointer));
+           
+			if (!clause.evaluate(otherPointer, otherPointerVariable.value)) {
 				//cout << "1. I'm inside if statement." << endl;
-				int implicatedVarId = clause->pointerToLiteralID(*otherPointer);
-				int implicatedVarValue = clause->whatValueMakesThisLiteralTrue(*otherPointer);
+				int implicatedVarId = clause.pointerToLiteralID(otherPointer);
+				int implicatedVarValue = clause.whatValueMakesThisLiteralTrue(otherPointer);
 				//cout << "Implied var: " << implicatedVarId << " with val: " << implicatedVarValue << endl;
 				//clause->getParentsByPointer(*otherPointer);
-				vector<int> parentLiterals(clause->getParentsByPointer(*otherPointer));
-				//phi.printVariables();
-				//clause->printClause();
-
-				vector<Variable> parentVariables = vector<Variable>();
-				for (unsigned int i = 0; i < parentLiterals.size(); i++) {
-					//cout << parentLiterals[i] << " ";
-					parentVariables.push_back(phi.variables[abs(parentLiterals[i])]);
-				}
-				//cout << endl;
-				//redo to make nicer
-				cout << "Implied conflict: " << implicatedVarId << " with val: " << implicatedVarValue << " with parent size: " << parentVariables.size() << endl;
-				//phi.printVariables();
-
+				vector<int> parentLiterals(clause.getParentsByPointer(otherPointer));
 				vars.insert(vars.begin(), Variable(implicatedVarId, implicatedVarValue));
-				parents.insert(parents.begin(), parentVariables);
+				parents.insert(parents.begin(), parentLiterals);
 				//the other pointer is true and so we should move it to that pointers
 				//return CONFLICT;
 				break;
 			}
-            else if(phi.variables[clause->pointerToLiteralID(*otherPointer)].value == -1){
-				//cout << "2. I'm inside else if statement." << endl;
-                int newPointer = *currentPointer;
-                for (unsigned int i = 0; i < clause->literals.size(); i++ ){
+            else if(otherPointerVariable.value == -1){
+				
+                int newPointer = currentPointer;
+                for (unsigned int i = 0; i < clause.literals.size(); i++ ){
 					//cout << i << endl;
-                    auto literal = clause->literals[i];
-                    int literalId = clause->pointerToLiteralID(i);
-                    if(i != *otherPointer && i != *currentPointer && phi.variables[literalId].value == -1){
-                        if (literal < 0){
-                            phi.variables[literalId].addNegativeClause(clauseId);
-                            
-                        }else{
-                            phi.variables[literalId].addPositiveClause(clauseId);
-                        }
-						if (var.value < 0) {
-							phi.variables[abs(var.literal)].removeNegativeClause(clauseId);
-
-						}
-						else {
-							phi.variables[abs(var.literal)].removePositiveClause(clauseId);
-						}
+                    ////////////////////////////////////////////////////////////
+                    /////////////////// ACCSSING VARIABLE COPY /////////////////
+                    ////////////////////////////////////////////////////////////
+                    Variable candidatePointerVariable = phi.getVariable(clause.pointerToLiteralID(i));
+                    if(i != otherPointer && i != currentPointer && candidatePointerVariable.value == -1){
                         newPointer = i;
-						//cout << "newPointer: " << newPointer << endl;
                         break;
                     }
-                    
                 }
-                if(*currentPointer != newPointer){
-					*currentPointer = newPointer;
+                
+                if(currentPointer != newPointer){
+                    phi.changeWatchedLiteral(clauseId, currentPointer, newPointer);
 					//cout << "p1: " << clause->p1 << " p2: " << clause->p2 << endl;
                 }else{
 					//cout << "3. I'm inside else statement." << endl;
-                    int implicatedVarId = clause->pointerToLiteralID(*otherPointer);
-                    int implicatedVarValue = clause->whatValueMakesThisLiteralTrue(*otherPointer);
+                    int implicatedVarId = clause.pointerToLiteralID(otherPointer);
+                    int implicatedVarValue = clause.whatValueMakesThisLiteralTrue(otherPointer);
 					//cout << "Implied var: " << implicatedVarId << " with val: " << implicatedVarValue << endl;
 					//clause->getParentsByPointer(*otherPointer);
-                    vector<int> parentLiterals(clause->getParentsByPointer(*otherPointer));
-					//phi.printVariables();
-					//clause->printClause();
-
-                    vector<Variable> parentVariables = vector<Variable>();
-                    for(unsigned int i = 0; i < parentLiterals.size(); i++){
-						//cout << parentLiterals[i] << " ";
-                        parentVariables.push_back(phi.variables[abs(parentLiterals[i])]);
-                    }
-					//cout << endl;
-                    //redo to make nicer
-					cout << "Implied var: " << implicatedVarId << " with val: " << implicatedVarValue << " with parent size: " << parentVariables.size() << endl;
-					//phi.printVariables();
-					//if (find(varsId.begin(), varsId.end(), implicatedVarId) == varsId.end()) {
-					//	varsId.push_back(implicatedVarId);
-					//	vars.push_back(Variable(implicatedVarId, implicatedVarValue));
-					//	parents.push_back(vector<Variable>(parentVariables));
-					//}
+                    vector<int> parentLiterals(clause.getParentsByPointer(otherPointer));
+                    vars.push_back(Variable(implicatedVarId, implicatedVarValue));
+                    parents.push_back(parentLiterals);
                 }
 
             }
         }
 		phi.print2Watched(phi.assignedIndex);
     }
-	cout << "Level index: " << phi.implicationGraph.levelIndex[0].size() << endl;
 	cout << "Finished unit propagation" << endl;
     return NOCONFLICT;
 }
 Variable RandomBranchingVariable(Formula &phi) {
-	int brachingVar = 1 + rand() % phi.variables.size();
+	int brachingVar = 1 + rand() % phi.getNumOfVar();
 	cout << "pick branching value: " << phi.prevAssignedIndex[brachingVar] << endl;
 	if (phi.prevAssignedIndex[brachingVar] == 0)
 		return Variable(brachingVar, 1);
@@ -432,7 +385,12 @@ Variable PickBranchingVariable(Formula &phi) {
 	//Use Variable State Independent Decaying Sum (VSIDS) to pick branching varible
     //important branch only on variables not already assigned
 	for (auto& it : phi.unassignedIndex) {
-		float currentActivity = phi.variables[it].activity;
+        ////////////////////////////////////////////////////////////
+        /////////////////// ACCSSING VARIABLE COPY /////////////////
+        ////////////////////////////////////////////////////////////
+        Variable unnassignedCandidateVariable = phi.getVariable(it);
+        
+		float currentActivity = unnassignedCandidateVariable.activity;
 		if (highestActivity < currentActivity) {
 			highestActivity = currentActivity;
 			brachingVar = it;
@@ -440,10 +398,14 @@ Variable PickBranchingVariable(Formula &phi) {
 	}
 	cout << "pick branching value: " << phi.prevAssignedIndex[brachingVar] << endl;
 	if(phi.prevAssignedIndex[brachingVar] == 0)
-		return Variable(brachingVar, 1);
+		
+        return Variable(brachingVar, 1);
+    
 	else if (phi.prevAssignedIndex[brachingVar] == 1)
+        
 		return Variable(brachingVar, 0);
 	else
+        
 		return Variable(brachingVar, rand() % 2); //Not sure how do you decide which value to set??? Currently, it is assigned randomly.
 }
 
@@ -468,117 +430,86 @@ int ConflictAnalysis(Formula &phi, int dl) {
 
 	We also need to consider the case where the conflict can no longer be resolved, in which case we return UNSAT.
 	*/
-	vector<int> conflictingNodeIndeces = phi.implicationGraph.variableIndex[phi.implicationGraph.ConflictingLiteralId];
+    //TODO
+	vector<int> conflictingNodeIndeces = phi.implicationGraph.failedState.parentNodes;
 	cout << "conflictingNodeIndeces: ";
 	for (unsigned int i = 0; i < conflictingNodeIndeces.size(); i++) {
 		cout << conflictingNodeIndeces[i] << " ";
 	}
 	cout << endl;
-	vector<int> conflictingNodeIndecesPos;
-	vector<int> conflictingNodeIndecesNeg;
+	int conflictingNodeIndecesPos = NULL;
+	int conflictingNodeIndecesNeg = NULL;
+   
 	for (unsigned int i = 0; i < conflictingNodeIndeces.size(); i++) {
-		if (phi.implicationGraph.nodes[conflictingNodeIndeces[i]].value == 1)
-			conflictingNodeIndecesPos.push_back(conflictingNodeIndeces[i]);
+		if (phi.implicationGraph.getNode(conflictingNodeIndeces[i]).value == 1)
+			conflictingNodeIndecesPos = conflictingNodeIndeces[i];
 		else
-			conflictingNodeIndecesNeg.push_back(conflictingNodeIndeces[i]);
+			conflictingNodeIndecesNeg = conflictingNodeIndeces[i];
 	}
-	cout << "conflictingNodeIndecesPos: ";
-	for (unsigned int i = 0; i < conflictingNodeIndecesPos.size(); i++) {
-		cout << conflictingNodeIndecesPos[i] << " "; 
-	}
-	cout << endl;
-	cout << "conflictingNodeIndecesNeg: ";
-	for (unsigned int i = 0; i < conflictingNodeIndecesNeg.size(); i++) {
-		cout << conflictingNodeIndecesNeg[i] << " ";
-	}
-	cout << endl;
+    if (conflictingNodeIndecesPos == NULL || conflictingNodeIndecesPos == NULL){
+        cout << "CONFILICT WITHOUT FAILED STATE PARENTS NODES!!!" << endl;
+        return level;
+    }else{
+        cout << "conflicts: " << conflictingNodeIndecesPos << " , " << conflictingNodeIndecesNeg << endl;
+    }
 	//Go through all the combinations of pairs of conflicted nodes
 	//For each pair concatenate the parents of the nodes to form a new clause
 	//Add the learned clause to the original formula
 	int lowestLevelParentNodeId;
-	for (unsigned int i = 0; i < conflictingNodeIndecesPos.size(); i++) {
-		for (unsigned int j = 0; j < conflictingNodeIndecesNeg.size(); j++) {
-			vector<int> clause = vector<int>();
-			list<int> parentPos = phi.implicationGraph.nodes[conflictingNodeIndecesPos[i]].parentNodes;
-			list<int> parentNeg = phi.implicationGraph.nodes[conflictingNodeIndecesNeg[j]].parentNodes;
-			cout << "parentPos size: " << parentPos.size() << " parentNeg size: " << parentNeg.size() << endl;
-			for (auto const& parent : parentPos) {
-				int parentId = phi.implicationGraph.nodes[parent].id;
-				int parentLiteralId = phi.implicationGraph.nodes[parent].literalId;
-				int parentValue = phi.implicationGraph.nodes[parent].value;
-				int parentLevel = phi.implicationGraph.nodes[parent].level;
-				cout << "parentLiteralId: " << parentLiteralId << " parentValue: " << parentValue << endl;
-				if (parentValue && (find(clause.begin(), clause.end(), -parentLiteralId) == clause.end()))
-					clause.push_back(-parentLiteralId); //learn the opposite value than what was initially assigned
-				else if (!parentValue && (find(clause.begin(), clause.end(), parentLiteralId) == clause.end()))
-					clause.push_back(parentLiteralId);
-				cout << "parentLevel" << parentLevel << endl;
-				//Overwrite the parent with the lowest level found
-				if (level > parentLevel) {
-					level = parentLevel;
-					cout << "parentLevel" << parentLevel << endl;
-					lowestLevelParentNodeId = parentId;
-				}
-			}
-			for (auto const& parent : parentNeg) {
-				int parentId = phi.implicationGraph.nodes[parent].id;
-				int parentLiteralId = phi.implicationGraph.nodes[parent].literalId;
-				int parentValue = phi.implicationGraph.nodes[parent].value;
-				int parentLevel = phi.implicationGraph.nodes[parent].level;
-				cout << "parentLiteralId: " << parentLiteralId << " parentValue: " << parentValue << endl;
-				if (parentValue && (find(clause.begin(), clause.end(), -parentLiteralId) == clause.end()))
-					clause.push_back(-parentLiteralId); //learn the opposite value than what was initially assigned
-				else if (!parentValue && (find(clause.begin(), clause.end(), parentLiteralId) == clause.end()))
-					clause.push_back(parentLiteralId);
-				cout << "parentLevel" << parentLevel << endl;
-				//Overwrite the parent with the lowest level found
-				if (level > parentLevel) {
-					level = parentLevel;
-					cout << "parentLevel" << parentLevel << endl;
-					lowestLevelParentNodeId = parentId;
-				}
-			}
-			phi.formula.push_back(Clause(clause));
+	
+    vector<int> clause;
+    vector<int> parentPos = phi.implicationGraph.getNode(conflictingNodeIndecesPos).parentNodes;
+    vector<int> parentNeg = phi.implicationGraph.getNode(conflictingNodeIndecesNeg).parentNodes;
+    
+    cout << "parentPos size: " << parentPos.size() << " parentNeg size: " << parentNeg.size() <<"  ["<< conflictingNodeIndecesPos <<"  "<<conflictingNodeIndecesNeg<<"]"<<endl;
+    
+    for (auto const& parent : parentPos) {
+        Node n = phi.implicationGraph.getNode(parent);
+        cout << "ParentLiteralId: " << n.literalId << " n.value: " << n.value << endl;
+        if (n.value && (find(clause.begin(), clause.end(), -n.literalId) == clause.end()))
+            clause.push_back(-n.literalId); //learn the opposite value than what was initially assigned
+        else if (!n.value && (find(clause.begin(), clause.end(), n.literalId) == clause.end()))
+            clause.push_back(n.literalId);
+        cout << "n.level" << n.level << endl;
+        //Overwrite the parent with the lowest level found
+        if (level > n.level) {
+            level = n.level;
+            cout << "n.level" << n.level << endl;
+            lowestLevelParentNodeId = n.id;
+        }
+    }
+    for (auto const& parent : parentNeg) {
+        Node n = phi.implicationGraph.getNode(parent);
+        cout << "n.literalId: " << n.literalId << " n.value: " << n.value << endl;
+        if (n.value && (find(clause.begin(), clause.end(), -n.literalId) == clause.end()))
+            clause.push_back(-n.literalId); //learn the opposite value than what was initially assigned
+        else if (!n.value && (find(clause.begin(), clause.end(), n.literalId) == clause.end()))
+            clause.push_back(n.literalId);
+        cout << "n.level" << n.level << endl;
+        //Overwrite the parent with the lowest level found
+        if (level > n.level) {
+            level = n.level;
+            cout << "n.level" << n.level << endl;
+            lowestLevelParentNodeId = n.id;
+        }
+    }
+    phi.addClause(clause,false);
+    
+    phi.bumpActivities(clause);
+    cout << "Learned clause: ";
+    for (unsigned int i = 0; i < clause.size(); i++) {
+        if (clause[i] < 0)
+            cout << "NOT ";
+        cout << phi.getVariables()[abs(clause[i])].letter << " ";
+        if (i < clause.size() - 1)
+            cout << "OR ";
+    }
+    cout << endl;
 
-			if (clause.size() > 1) 
-			{
-				if (clause[0] < 0) {
-					phi.variables[abs(clause[0])].addNegativeClause(phi.formula.size() - 1);
-				}
-				else {
-					phi.variables[abs(clause[0])].addPositiveClause(phi.formula.size() - 1);
-				}
-				if (clause[1] < 0) {
-					phi.variables[abs(clause[1])].addNegativeClause(phi.formula.size() - 1);
-				}
-				else {
-					phi.variables[abs(clause[1])].addPositiveClause(phi.formula.size() - 1);
-				}
-			}
-			else if(clause.size() != 0){
-				if (clause[0] < 0) {
-					phi.variables[abs(clause[0])].addNegativeClause(phi.formula.size() - 1);
-				}
-				else {
-					phi.variables[abs(clause[0])].addPositiveClause(phi.formula.size() - 1);
-				}
-			}
-
-			phi.bumpActivities(clause);
-			cout << "Learned clause: ";
-			for (unsigned int i = 0; i < clause.size(); i++) {
-				if (clause[i] < 0)
-					cout << "NOT ";
-				cout << phi.variables[abs(clause[i])].letter << " ";
-				if (i < clause.size() - 1)
-					cout << "OR ";
-			}
-			cout << endl;
-		}
-	}
 	//while (1);
-	level = phi.implicationGraph.backtrackToLowestLevelParent(lowestLevelParentNodeId, level);
-	return level-1; //return one level below of the corresponding lowest level root node
+    level = phi.implicationGraph.getBacktrackLevel();
+	return level; //return one level below of the corresponding lowest level root node
+
 }
 
 /******************************************************
@@ -601,8 +532,11 @@ void Backtrack(Formula &phi, int beta) {
 		for (unsigned int j = 0; j < levelIndexList.size(); j++) {
 			phi.unassignVariable(abs(levelIndexList[j]));
 			phi.implicationGraph.removeNodesByLiteralId(abs(levelIndexList[j]));
+
 		}
+        
 	}
+    phi.implicationGraph.resetFailedState();
 }
 
 /******************************************************
@@ -619,7 +553,7 @@ int CDCL(Formula &phi) {
 	phi.printFormula();
 	phi.printIndex();
 	while (!phi.allVariablesAssigned()) {
-		Variable branchVar = RandomBranchingVariable(phi);
+		Variable branchVar = PickBranchingVariable(phi);
 		cout << "***********************************************" << endl;
         cout << "Picking a branching variable: " << branchVar.letter << " value: " << branchVar.value << endl;
 

@@ -13,10 +13,11 @@
 class Formula {
 
 	float decay = 0.8;
-
+    unordered_map<int, Variable> variables;
+    vector<Clause> formula;
 public:
-	vector<Clause> formula;
-	unordered_map<int, Variable> variables;
+	
+	
     list<int> assignedIndex;
     list<int> unassignedIndex;
 	vector<int> prevAssignedIndex;
@@ -27,20 +28,26 @@ public:
     Graph implicationGraph;
 	int getNumOfVar();
 	int getNumOfClauses();
-	int assignVariable(int literal, int value,int level,vector<Variable> parentVariables);
+	int assignVariable(int literal, int value,int level,vector<int> parentLiterals);
     void unassignVariable(int literal);
 	bool allVariablesAssigned();
-    int removeSingleLiteralVariables();
 	int removeSingleLiteralVariables2();
     void index(int absLiteral);
     void printFormula();
 	void printVariables();
     void printIndex();
-    void addVariable(int absLiteral,int value);
     void removeVariable(int absLiteral);
 	void print2Watched(list<int> literalIndeces);
 
 	void bumpActivities(vector<int> learnedClauseVars);
 	void decayActivities();
-    ImplicationAnalysis setInferredVariable(int clauseIndex);
+    
+    Variable getVariable(int literalId);
+    Clause getClause(int clauseId);
+    unordered_map<int, Variable> getVariables();
+    void removeClauseFromVariableIndex(int literalId,int clauseId,bool negativeIndex);
+    void addClauseToVariableIndex(int literalId,int clauseId,bool negativeIndex);
+    void changeWatchedLiteral(int clauseId,int currentRelativeLiteralId,int newRelativeLiteralId);
+    void addClause(vector<int> clause,bool allowNewVariables);
+    void addVariable(int literalId);
 };
