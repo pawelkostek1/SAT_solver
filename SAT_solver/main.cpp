@@ -268,6 +268,7 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
 		//phi.printVariables();
 		//cout << "got here" << endl;
 		cout << "Considering variable: " << var.letter << endl;
+		//varsId.erase(varsId.begin(), varsId.begin() + 1);
 		vars.erase(vars.begin(), vars.begin() + 1);
 		parents.erase(parents.begin(), parents.begin() + 1);
 		cout << "vars size: " << vars.size() << " parents size: " << parents.size() << endl;
@@ -388,11 +389,11 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
                     //redo to make nicer
 					cout << "Implied var: " << implicatedVarId << " with val: " << implicatedVarValue << " with parent size: " << parentVariables.size() << endl;
 					//phi.printVariables();
-					if (find(varsId.begin(), varsId.end(), implicatedVarId) == varsId.end()) {
-						varsId.push_back(implicatedVarId);
-						vars.push_back(Variable(implicatedVarId, implicatedVarValue));
-						parents.push_back(vector<Variable>(parentVariables));
-					}
+					//if (find(varsId.begin(), varsId.end(), implicatedVarId) == varsId.end()) {
+					//	varsId.push_back(implicatedVarId);
+					//	vars.push_back(Variable(implicatedVarId, implicatedVarValue));
+					//	parents.push_back(vector<Variable>(parentVariables));
+					//}
                 }
 
             }
@@ -599,7 +600,7 @@ void Backtrack(Formula &phi, int beta) {
 		phi.implicationGraph.levelIndex.erase(i);
 		for (unsigned int j = 0; j < levelIndexList.size(); j++) {
 			phi.unassignVariable(abs(levelIndexList[j]));
-			phi.implicationGraph.removeNodesByLiteralId(levelIndexList[j]);
+			phi.implicationGraph.removeNodesByLiteralId(abs(levelIndexList[j]));
 		}
 	}
 }
