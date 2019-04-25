@@ -260,6 +260,7 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
 		//cout << "got here" << endl;
         cout << "Considering variable: " << var.literalId << endl;
 		cout << "Considering variable: " << var.letter << endl;
+		//varsId.erase(varsId.begin(), varsId.begin() + 1);
 		vars.erase(vars.begin(), vars.begin() + 1);
 		parents.erase(parents.begin(), parents.begin() + 1);
 		cout << "vars size: " << vars.size() << " parents size: " << parents.size() << endl;
@@ -567,7 +568,7 @@ void Backtrack(Formula &phi, int beta) {
 		for (unsigned int j = 0; j < levelIndexList.size(); j++) {
 			phi.unassignVariable(abs(levelIndexList[j]));
 			phi.implicationGraph.removeNodesByLiteralId(abs(levelIndexList[j]));
-            
+
 		}
         
 	}
