@@ -6,6 +6,7 @@ using namespace std;
 class Variable {
     
 public:
+    bool locked = false;
     int literal;
     int literalId;
     int value;

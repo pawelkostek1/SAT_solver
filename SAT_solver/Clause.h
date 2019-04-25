@@ -1,7 +1,8 @@
 #pragma once
 #include<vector>
 #include"Clause.h"
-
+#include<unordered_map>
+#include"Variable.h"
 using namespace std;
 
 /*
@@ -19,9 +20,11 @@ public:
 	Clause(); //Constructor
     ~Clause();
     bool evaluate(int literalId, int value);
+    bool evaluateAll(unordered_map<int,Variable> assignments);
     int pointerToLiteralID(int pId);
     int whatValueMakesThisLiteralTrue(int p);
     vector<int> getParentsByPointer(int p);
 	void printClause();
     void changePointer(int currentPointer,int newPointer);
+    
 };

@@ -10,7 +10,7 @@ using namespace std;
 class Node {
 public:
     //this is a reference to the original
-    int id;
+    int literal;
     int literalId;
     char letter;
 	int value;

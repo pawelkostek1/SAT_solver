@@ -17,27 +17,36 @@ Graph::~Graph()
 int Graph::addNode(int literalId,int literal, int level, int value, vector<int> parentLiterals) {
     //max two nodes per literal
     //we start by checking if the node with the same value exists
-    int nodeId = literal;
-   
-    
+    int nodeId = literalId*(value == 0? -1:1);
     if(levelIndex.find(level) == levelIndex.end()){
         levelIndex[level] = {};
     }
-    if(nodes.find(nodeId) == nodes.end()){
+    Node node ;
+    if(nodes.find(literal) == nodes.end()){
         
-        Node n = Node(nodeId,literal,value,level,parentLiterals);
-        nodes[nodeId] = n;
+        node = Node(literalId,literal,value,level,parentLiterals);
+        
+        nodes[nodeId] = node;
    
     }else{
         
-        nodes[nodeId].addParents(parentLiterals);
-        
+        node = getNode(nodeId);
+        if(node.level != level)
+            node.addParents(parentLiterals);
+        nodes[nodeId] = node;
     }
     
-    levelIndex[level].push_back(nodeId);
-    cout << "NODE:"<<nodes[nodeId].letter<<" (" << nodeId << ") , LEVEL: " << level << " , VALUE: " << value << ", PARENTS: ";
-    for(auto const node:parentLiterals){
-        cout << nodes[node].letter << ",";
+    levelIndex[level].push_back(literal);
+    cout << "NODE:"<<node.letter<<" (" << literal << ") , LEVEL: " << level << " , VALUE: " << value << ", PARENTS: ";
+    for(auto const parent:parentLiterals){
+        if(node.literalId == 2){
+            
+            
+        }
+        Node pNode = getNode(parent);
+        cout << pNode.letter << ",";
+      
+        
     }
     cout << endl;
     if(nodes.find(nodeId*-1) != nodes.end()){
@@ -73,24 +82,38 @@ int Graph::getBacktrackLevel() {
             }
         }
     }
+    
 	return level;
 }
-
+void backtrackToLevel(int level){
+    
+}
 void Graph::resetFailedState(){
     failedState.parentNodes = {};
+    
 }
 
 void Graph::printGraph(){
     cout << "GRAPH" << endl;
-    unordered_map<int, Node>::iterator it = nodes.begin();
-    while(it != nodes.end())
+    for(auto level : levelIndex)
     {
-        cout << it->second.letter << ": ";
-        for(auto const parent : it->second.parentNodes){
-            cout << nodes[parent].letter << ",";
+        cout << "LVL" << level.first << endl;
+        for (auto const nodeId: level.second){
+            Node  node = getNode(nodeId);
+            cout << "(" << node.literalId << ") ";
+            if (node.value == 0){
+                cout  << "-";
+            }
+            
+            cout << node.letter << ": " << node.parentNodes.size() << " -> ";
+            for(int i = 0; i < node.parentNodes.size(); i++){
+                
+                Node pNode = getNode(node.parentNodes[i]);
+                cout << (i > 0?",":"") << (pNode.value == 0?"-":"") << pNode.letter;
+            }
+            cout << endl;
         }
-        cout << endl;
-        it++;
+        
     }
     
     
@@ -102,9 +125,35 @@ void Graph::printGraph(){
 
 Node Graph::getNode(int nodeId){
     if(nodes.find(nodeId) != nodes.end()){
-        cout <<"NODE: "<< nodeId << " " << nodes[nodeId].literalId << endl;
+        //cout <<"NODE: "<< nodeId << " " << nodes[nodeId].literalId << endl;
         return nodes[nodeId];
     }else{
+        
         throw "NODE DOES NOT EXISTS";
+        printGraph();
     }
+}
+
+
+
+vector<int> Graph::getRoots(Node node){
+    vector<int> pn = node.parentNodes;
+    vector<int> rn = {};
+    while(pn.size() > 0){
+        int nId = pn.front();
+        Node n = nodes[nId];
+        pn.erase(pn.begin());
+        if (n.parentNodes.size() == 0){
+            if (find(rn.begin(),rn.end(),nId) == rn.end()){
+                rn.push_back(nId);
+            }
+        }else{
+            for(auto&& ppn:n.parentNodes){
+                pn.push_back(ppn);
+            }
+            
+        }
+    }
+    
+    return rn;
 }

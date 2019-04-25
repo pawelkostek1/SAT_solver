@@ -13,8 +13,10 @@
 class Formula {
 
 	float decay = 0.8;
+    int totalClauseCounter = 0;
     unordered_map<int, Variable> variables;
     unordered_map<int,Clause> formula;
+    unordered_map<int,Clause> originalFormula;
 public:
 	
 	
@@ -44,12 +46,15 @@ public:
     
     Variable getVariable(int literalId);
     Clause getClause(int clauseId);
+    bool needsSingleRemovalPass = true;
     unordered_map<int, Variable> getVariables();
     void removeClauseFromVariableIndex(int literalId,int clauseId,bool negativeIndex);
     void addClauseToVariableIndex(int literalId,int clauseId,bool negativeIndex);
     void changeWatchedLiteral(int clauseId,int currentRelativeLiteralId,int newRelativeLiteralId);
-    void addClause(vector<int> clause,bool allowNewVariables);
+    int addClause(vector<int> clause,bool allowNewVariables);
     void addVariable(int literalId);
     void removeClause(int clauseId);
     void updateClause(int clauseId,vector<int> clause);
+    bool checkSolution();
+    void printClause(int clauseId);
 };

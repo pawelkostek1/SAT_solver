@@ -26,6 +26,8 @@ public:
     void resetFailedState();
     void printGraph();
     Node getNode(int nodeId);
-    
+    void backtrackToLevel(int level);
+    vector<int> getRoots(Node node);
+
 };
 

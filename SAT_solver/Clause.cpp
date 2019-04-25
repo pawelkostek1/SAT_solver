@@ -24,6 +24,18 @@ bool Clause::evaluate(int p, int value){
     }
     return false;
 }
+
+
+bool Clause::evaluateAll(unordered_map<int,Variable> assignments){
+    for (int i = 0; i < literals.size(); i++){
+        int value = assignments[literalIds[i]].value;
+        if(evaluate(i,value)){
+            return value != -1;
+        }
+       
+    }
+    return false;
+}
 int Clause::pointerToLiteralID(int p){
     return literalIds[p];
 	//for (auto&& it : literalIds) {
@@ -56,6 +68,9 @@ vector<int> Clause::getParentsByPointer(int p){
 	//cout << endl;
 	//cout << p << endl;
     parents.erase(parents.begin()+p);
+    //for(int i = 0; i < parents.size(); i++){
+    //    parents[i] = -1*parents[i];
+    //}
 	//std::cout << "2. Parent size: " << parents.size() << endl;
 	//for (auto&& it : parents) {
 	//	cout << it << " ";

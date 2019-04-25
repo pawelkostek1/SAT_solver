@@ -1,9 +1,10 @@
 #include"Node.h"
 #include"constants.h"
 
-Node::Node(int _id, int _literalId, int _value,int _level,vector<int> parentLiterals) {
-    id = _id;
-    literalId = _literalId;
+Node::Node(int _literalId, int _literal,  int _value,int _level,vector<int> parentLiterals) {
+    
+    literalId = abs(_literalId);
+    literal = _literal;
 	value = _value;
     level = _level;
     letter = 'A' + _literalId - 1;
