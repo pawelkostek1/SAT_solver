@@ -17,11 +17,10 @@ class Graph {
 public:
     
     unordered_map<int,vector<int> > levelIndex;
-	int ConflictingLiteralId;
 	Graph(); //Constructor
 	~Graph();
     Node failedState;
-	int addNode(int literal, int level, int value, vector<int> parentLiterals);
+	int addNode(int literalId,int literal, int level, int value, vector<int> parentLiterals);
     void removeNodesByLiteralId(int literalId);
 	int getBacktrackLevel();
     void resetFailedState();

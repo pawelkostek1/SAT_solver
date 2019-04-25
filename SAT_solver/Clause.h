@@ -23,4 +23,5 @@ public:
     int whatValueMakesThisLiteralTrue(int p);
     vector<int> getParentsByPointer(int p);
 	void printClause();
+    void changePointer(int currentPointer,int newPointer);
 };

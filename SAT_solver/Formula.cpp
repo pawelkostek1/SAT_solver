@@ -9,7 +9,7 @@
 #include <sstream>
 using namespace std;
 
-Formula::Formula(vector<Clause> _formula, unordered_map<int,Variable> _variables)
+Formula::Formula(unordered_map<int,Clause> _formula, unordered_map<int,Variable> _variables)
 {
     variables = _variables;
 	formula = _formula;
@@ -24,7 +24,7 @@ Formula::Formula(vector<Clause> _formula, unordered_map<int,Variable> _variables
 }
 Formula::Formula()
 {
-    formula = vector<Clause>();
+    formula = unordered_map<int,Clause>();
     variables = unordered_map<int,Variable>();
     //Not sure what this does yet
     prevAssignedIndex = vector<int>(variables.size(), -1);
@@ -74,21 +74,36 @@ void Formula::addClause(vector<int> clause,bool allowNewVariables){
             }else{
                 throw "NOT ALLOWED TO ADD NEW VARIABLES";
             }
-            
         }
     }
     int cId = formula.size();
-    formula.push_back(c);
+    formula[cId] = c;
    
     changeWatchedLiteral(cId, -1, 0);
-    changeWatchedLiteral(cId, -1, 1);
+    if(clause.size() > 1){
+        changeWatchedLiteral(cId, -1, 1);
+    }
     
+}
+void Formula::removeClause(int clauseId){
+    Clause c = getClause(clauseId);
+    changeWatchedLiteral(clauseId, c.p1, -1);
+    changeWatchedLiteral(clauseId, c.p2, -1);
+    formula.erase(clauseId);
     
     
 }
+void Formula::updateClause(int clauseId, vector<int> clause){
+    Clause c = getClause(clauseId);
+    changeWatchedLiteral(clauseId, c.p1, -1);
+    changeWatchedLiteral(clauseId, c.p2, -1);
+    formula[clauseId] = Clause(clause);
+    changeWatchedLiteral(clauseId, -1, 0);
+    changeWatchedLiteral(clauseId, -1, 1);
+}
 
 Clause Formula::getClause(int clauseId){
-    if (clauseId >= 0 && clauseId < formula.size()){
+    if (formula.find(clauseId) != formula.end()){
         return formula[clauseId];
     }else{
         throw "TRYING TO ACCESS CLAUSE WITH FAULTY CLAUSE ID";
@@ -104,7 +119,7 @@ Clause Formula::getClause(int clauseId){
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
 void Formula::addVariable(int literalId){
-    variables[literalId] = Variable(literalId,-1);
+    variables[literalId] = Variable(literalId,literalId,-1);
     unassignedIndex.push_back(literalId);
     prevAssignedIndex.push_back(-1);
 }
@@ -136,6 +151,8 @@ void Formula::removeClauseFromVariableIndex(int literalId,int clauseId,bool nega
 void Formula::addClauseToVariableIndex(int literalId,int clauseId,bool negativeIndex){
     Variable v = getVariable(literalId);
     if (negativeIndex){
+        cout << "TRYING TO ADD CLAUSE " << clauseId << " TO NEGATIVE INDEX FOR VAR " << v.letter << "(" << v.literalId << ")" << endl;
+
         v.addNegativeClause(clauseId);
     }else{
         v.addPositiveClause(clauseId);
@@ -144,19 +161,27 @@ void Formula::addClauseToVariableIndex(int literalId,int clauseId,bool negativeI
 }
 void Formula::changeWatchedLiteral(int clauseId,int currentRelativeLiteralId,int newRelativeLiteralId){
     Clause c = getClause(clauseId);
-    int candidateLiteral = c.literals[newRelativeLiteralId];
-    int candidateAbsoluteLiteralId = c.pointerToLiteralID(newRelativeLiteralId);
-    addClauseToVariableIndex(candidateAbsoluteLiteralId,clauseId,candidateLiteral < 0);
+    if (newRelativeLiteralId >= 0){
+        int candidateLiteral = c.literals[newRelativeLiteralId];
+        int candidateAbsoluteLiteralId = c.pointerToLiteralID(newRelativeLiteralId);
+        
+        addClauseToVariableIndex(candidateAbsoluteLiteralId,clauseId,candidateLiteral < 0);
+    }
     if(currentRelativeLiteralId >= 0){
         int currentLiteral = c.literals[currentRelativeLiteralId];
         int currentAbsoluteLiteralId = c.pointerToLiteralID(currentRelativeLiteralId);
         removeClauseFromVariableIndex(currentAbsoluteLiteralId,clauseId,currentLiteral < 0);
     }
+    if (currentRelativeLiteralId >= 0 && currentRelativeLiteralId >= 0){
+        c.changePointer(currentRelativeLiteralId,newRelativeLiteralId);
+    }
+    
+    formula[clauseId] = c;
     
 }
 
 
-int Formula::assignVariable(int literalId, int value, int level, vector<int> parentLiterals) {
+int Formula::assignVariable(int literalId, int literal,int value, int level, vector<int> parentLiterals) {
     //if the variable already has a value that is not -1 and does not match the value
     //we want to assign there is a conflict 
     Variable v = getVariable(literalId);
@@ -176,7 +201,14 @@ int Formula::assignVariable(int literalId, int value, int level, vector<int> par
     cout << "assigning value to variable: "<< literalId << ", " << v.value << endl;
     //Add the node
     variables[literalId] = v;
-    return implicationGraph.addNode(literalId,level, value, parentLiterals);
+    if (level > -1){
+        int result = implicationGraph.addNode(literalId,literal,level, value, parentLiterals);
+        implicationGraph.printGraph();
+        return result;
+    }else{
+        return NOCONFLICT;
+    }
+    
 }
 
 void Formula::unassignVariable(int literalId) {
@@ -202,7 +234,6 @@ bool Formula::allVariablesAssigned(){
 }
 
 int Formula::removeSingleLiteralVariables2(){
-
     list<int> removedClauses = list<int>();
     unordered_map<int, int> singleLiteralVariableSign = unordered_map<int, int>();
     vector<int> variablesWithOneLiteral = vector<int>();
@@ -210,6 +241,7 @@ int Formula::removeSingleLiteralVariables2(){
     int i = 0;
     while(approvedClauses < formula.size()){
         //if a clause has one literal add it to the variablesWithOneLiteral vector
+        print2Watched(true);
         vector<int> clause = formula[i].literals;
         cout << "Checking clause: " << i << endl;
         if(clause.size() == 1){
@@ -223,19 +255,18 @@ int Formula::removeSingleLiteralVariables2(){
 				//Assign the variable accordingly
 
 				if (clause[0] > 0) {
-					variables[abs(clause[0])].value = 1;
-					assignedIndex.push_back(abs(clause[0]));
+                    assignVariable(abs(clause[0]), clause[0], 1, -1, {});
 				}
 				else {
-					variables[abs(clause[0])].value = 0;
-					assignedIndex.push_back(abs(clause[0]));
+					assignVariable(abs(clause[0]), clause[0], 0, -1, {});
 				}
             }
             
             variablesWithOneLiteral.push_back(clause[0]);
             approvedClauses = 0;
             //remove the formula
-            formula.erase(formula.begin()+i);
+            removeClause(i);
+            //formula.erase(formula.begin()+i);
             cout << "Formula size after deletion: " << formula.size() << endl;
             //since we removed a clause we let i be the same until the next loop
         }else{
@@ -252,7 +283,7 @@ int Formula::removeSingleLiteralVariables2(){
                 if (normalPosition != clause.end()){
                     //Delete the clause all together because it has already been satisified by the single literal
                     //assignement
-                    formula.erase(formula.begin()+i);
+                    removeClause(i);
                     //since we again removed a clause we do not modify i
                     incrementI = 0;
                     //since we do not know if the clause we erased was contributed to the approvedCount
@@ -264,10 +295,12 @@ int Formula::removeSingleLiteralVariables2(){
                     //Delete the complement of the literal
                     clause.erase(compPosition);
 					cout << "Clause size: " << clause.size() << endl;
-					if(clause.size()!=0)
-						formula[i] = Clause(clause);
-					else
-						formula.erase(formula.begin() + i);
+                    if(clause.size()!=0){
+                        updateClause(i, clause);
+                    }else{
+                        removeClause(i);
+                    }
+                    
 					//if (literal < 0) {
 					//	auto it = find(variables[abs(literal)].negativeClauses.begin(), variables[abs(literal)].negativeClauses.end(), i);
 					//	variables[abs(literal)].negativeClauses.erase(it);
@@ -290,12 +323,13 @@ int Formula::removeSingleLiteralVariables2(){
             i+=incrementI;
             approvedClauses+=incrementA;
         }
-		printVariables();
+		
         //Make sure we reset the i variable so we only exit the while loop
         //when all variablesWithOneLiteral have been
         if(approvedClauses < formula.size() && i == formula.size()-1){
             i = 0;
-        }  
+        }
+        
     }
     
     //remove each variable that had a single literal clause from any index or assignment list apart from the original variables list
@@ -304,7 +338,7 @@ int Formula::removeSingleLiteralVariables2(){
     //    removeVariable(abs(variablesWithOneLiteral[i]));
     //}
     
-    for(int unsigned i = 0; i < formula.size(); i++){
+    /*for(int unsigned i = 0; i < formula.size(); i++){
         vector<int> clause = formula[i].literals;
         cout << "ClauseId: " << i << endl;
 		int count = 0;
@@ -323,8 +357,8 @@ int Formula::removeSingleLiteralVariables2(){
 				count+= 1;
 			}
         }
-    }
-    
+    }*/
+    printVariables();
     return NOCONFLICT;
 }
 
@@ -377,77 +411,118 @@ void Formula::decayActivities() {
 		it.second.activity *= this->decay;
 	}
 }
+void Formula::printClauses(){
+    int i = 0;
+    for (auto clauseIt : formula) {
+        Clause clause = clauseIt.second;
+        cout << clauseIt.first << " -> ";
+        for (unsigned int j = 0; j < clause.literals.size(); j++) {
+            
+            if (clause.literals[j] < 0) {
+                cout << "NOT " << variables[abs(clause.literals[j])].letter;
+                cout << "(" << variables[abs(clause.literals[j])].value << ")" << (clause.p1 == j || clause.p2 == j? "*":"");
+            }
+            else {
+                cout << variables[clause.literals[j]].letter;
+                cout << "(" << variables[abs(clause.literals[j])].value << ")" << (clause.p1 == j || clause.p2 == j? "*":"");
+            }
+            
+            if (j < clause.literals.size() - 1) {
+                cout << " OR ";
+            }
+           
+        }
+         cout << endl;
+        i++;
+    }
+}
+void Formula::print2Watched(bool verbose) {
+	cout << "|-------------------------------------------------|-----------|------------------------------------------------|" << endl;
 
-void Formula::print2Watched(list<int> literalIndeces) {
-	cout << "|---------------------------------------|---|--------------------------------------|" << endl;
-
-		for (auto& it : literalIndeces) {
+		for (auto& it : variables) {
 			
-			for (int i = 0; i < max(variables[it].postiveClauses.size(), variables[it].negativeClauses.size()); i++) {
-				if (i<variables[it].postiveClauses.size()) {
+			for (int i = 0; i < max(it.second.postiveClauses.size(), it.second.negativeClauses.size()); i++) {
+				if (i<it.second.postiveClauses.size()) {
 					ostringstream s;
-					Clause clause = formula[variables[it].postiveClauses[i]];
-					cout << left << setw(40);
-					s << "| ";
-
-					for (unsigned int j = 0; j < clause.literals.size(); j++) {
-						if (clause.literals[j] < 0) {
-							s << "NOT " << variables[abs(clause.literals[j])].letter;
-						}
-						else {
-							s << variables[clause.literals[j]].letter;
-						}
-
-						if (j < clause.literals.size() - 1) {
-							s << " OR ";
-						}
-					}
-					s << "(" << variables[it].postiveClauses[i] << ")";
+					Clause clause = formula[it.second.postiveClauses[i]];
+					cout << left << setw(50);
+                    s << "| " << it.second.postiveClauses[i] << " -> ";
+                    if (verbose){
+                        for (unsigned int j = 0; j < clause.literals.size(); j++) {
+                            if (clause.literals[j] < 0) {
+                                s << "NOT " << variables[abs(clause.literals[j])].letter;
+                                s << "(" << variables[abs(clause.literals[j])].value << ")" << (clause.p1 == j || clause.p2 == j? "*":"");
+                            }
+                            else {
+                                s << variables[clause.literals[j]].letter;
+                                s << "(" << variables[abs(clause.literals[j])].value << ")" << (clause.p1 == j || clause.p2 == j? "*":"");
+                            }
+                            
+                            if (j < clause.literals.size() - 1) {
+                                s << " OR ";
+                            }
+                            
+                        }
+                    }else{
+                        s << it.second.postiveClauses[i];
+                    }
+					
+					
 					cout << s.str();
 				}
 				else {
 					ostringstream s;
-					cout << left << setw(40);
+					cout << left << setw(50);
 					s << "| ";
 					cout << s.str();
 				}
 				if (i == 0) {
-					cout << "| "<< variables[it].letter << " |";;
-				}
+                    string value = (it.second.value == 1? " = TRUE ":(it.second.value == 0?"= FALSE ":" = ---- "));
+                    cout << "| "<< it.second.letter << value << " |";
+                }
 				else {
-					cout << "|   |";
+					cout << "|           |";
 				}
-				if (i<variables[it].negativeClauses.size()) {
+				if (i<it.second.negativeClauses.size()) {
 					ostringstream s;
-					Clause clause = formula[variables[it].negativeClauses[i]];
-					cout << right << setw(40);
+					Clause clause = formula[it.second.negativeClauses[i]];
+					cout << right << setw(50);
 					
-
-					for (unsigned int j = 0; j < clause.literals.size(); j++) {
-						if (clause.literals[j] < 0) {
-							s << "NOT " << variables[abs(clause.literals[j])].letter;
-						}
-						else {
-							s << variables[clause.literals[j]].letter;
-						}
-
-						if (j < clause.literals.size() - 1) {
-							s << " OR ";
-						}
-					}
-					s << "(" << variables[it].negativeClauses[i] << ")";
+                    if (verbose){
+                        for (unsigned int j = 0; j < clause.literals.size(); j++) {
+                            
+                            if (clause.literals[j] < 0) {
+                                s << "NOT " << variables[abs(clause.literals[j])].letter;
+                                s << "(" << variables[abs(clause.literals[j])].value << ")" << (clause.p1 == j || clause.p2 == j? "*":"");
+                            }
+                            else {
+                                s << variables[clause.literals[j]].letter;
+                                s << "(" << variables[abs(clause.literals[j])].value << ")" << (clause.p1 == j || clause.p2 == j? "*":"");
+                            }
+                            
+                            if (j < clause.literals.size() - 1) {
+                                s << " OR ";
+                            }
+                            
+                        }
+                        s << " <- " << it.second.negativeClauses[i];
+                    }else{
+                       s << it.second.negativeClauses[i];
+                    }
+					
+					//s << "(" << variables[it].negativeClauses[i] << ")";
 					s << "|\n";
 					
 					cout << s.str();
 				}
 				else {
 					ostringstream s;
-					cout << right << setw(40);
+					cout << right << setw(50);
 					s << "|\n";
 					cout << s.str();
 				}
 			}
-			cout << "|---------------------------------------|---|--------------------------------------|" << endl;
+			cout << "|-------------------------------------------------|-----------|------------------------------------------------|" << endl;
 		}
-		cout << "|---------------------------------------|---|--------------------------------------|" << endl;
+		cout << "|-------------------------------------------------|-----------|------------------------------------------------|" << endl;
 }

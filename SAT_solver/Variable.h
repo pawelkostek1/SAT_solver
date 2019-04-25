@@ -7,12 +7,13 @@ class Variable {
     
 public:
     int literal;
+    int literalId;
     int value;
     char letter;
 	float activity;
     vector<int> postiveClauses;
     vector<int> negativeClauses;
-    Variable(int _literal, int _value);
+    Variable(int _literalId,int _literal, int _value);
 	Variable();
     ~Variable();
     void addPositiveClause(int clauseId);

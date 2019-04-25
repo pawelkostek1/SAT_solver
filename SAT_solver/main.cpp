@@ -22,7 +22,7 @@
 using namespace std;
 
 //Declare functions
-Formula LoadFormula();
+Formula LoadFormula(string problem);
 void printAnswer(Formula &phi, int ans);
 int UnitPropagation(Formula &phi, Variable branchVar,int level);
 Variable RandomBranchingVariable(Formula &phi);
@@ -35,12 +35,22 @@ int main() {
     
     //TESTING TIME
     Verify tester = Verify();
-
+    //tester.test2WatchedIndex();
 	//tester.test2WatchedLiterals();
     
 	//Read the encoded Enstein's puzzle into variable phi
-	Formula phi = LoadFormula();
-	
+	Formula phi = LoadFormula("puzzle6.cnf");
+    Formula phiTest = tester.createFormula();
+    cout << "INITIAL STATE" << endl;
+    phi.printClauses();
+    phi.print2Watched(true);
+    cout << "\n\n" << endl;
+    //Solve the puzzle
+    int ans = CDCL(phi);
+    //Print the answer
+    printAnswer(phi, ans);
+    while (1);
+    return 0;
 	//printAnswer(phi, SAT);
 	/*
 	//////////////////////////////////
@@ -84,9 +94,9 @@ int main() {
 	Variable branchVar = PickBranchingVariable(phi_test);
 	branchVar.value = 1;
 
-	//phi_test.assignVariable(branchVar.literal, branchVar.value, 1, vector<Variable>());
+	//phi_test.assignVariable(branchVar.literalId, branchVar.value, 1, vector<Variable>());
 
-	cout << "The chosen variable is: " << branchVar.literal << " with assignements set to: " << branchVar.value << " and activity level at: " << branchVar.activity << endl;
+	cout << "The chosen variable is: " << branchVar.literalId << " with assignements set to: " << branchVar.value << " and activity level at: " << branchVar.activity << endl;
 
 	//Test Conflict Analysis function
 	cout << "*********************************************" << endl;
@@ -120,16 +130,9 @@ int main() {
 	phi_test.printVariables();
 	//////////////////////////////////
 	*/
-	//Solve the puzzle
-	int ans = CDCL(phi);
-
 	
 
-	//Print the answer
-	printAnswer(phi, ans);
-
-	while (1);
-	return 0;
+	
 }
 
 /******************************************************
@@ -137,11 +140,11 @@ int main() {
 *
 * @params: phi(Formula) -
 */
-Formula LoadFormula() {
+Formula LoadFormula(string problem) {
 	//The following code assume .cnf input file
     int numOfvar = 0, numOfClauses = 0;
 	ifstream File;
-	File.open("puzzle6.cnf");
+	File.open(problem);
 	if (!File) {
 		cout << "Unable to open file puzzle.cnf" << endl;
 	}
@@ -159,9 +162,16 @@ Formula LoadFormula() {
 			}
 			//numOfvar = stoi(line.substr(6, 2));
 			//numOfClauses = stoi(line.substr(9, 2));
-			numOfvar = stoi(line.substr(6, 2));
-			numOfClauses = stoi(line.substr(9, 2));
-			cout << "numOfvar: " << numOfvar << " numOfClauses: " << numOfClauses << endl;
+            //cout << "numOfvar: " << numOfvar << " numOfClauses: " << numOfClauses << endl;
+            vector<string> parts = {};
+            istringstream iss(line);
+            string s;
+            while ( getline( iss, s, ' ' ) ) {
+                parts.push_back(s.c_str());
+            }
+			numOfvar = stoi(parts[2]);
+			numOfClauses = stoi(parts[3]);
+			
 			break;
 		}
 	}
@@ -224,7 +234,7 @@ void printAnswer(Formula &phi, int ans) {
 */
 int UnitPropagation(Formula &phi, Variable branchVar,int level) {
 
-    if (branchVar.literal == 0){
+    if (branchVar.literalId == 0){
         return phi.removeSingleLiteralVariables2();
     }
 	//phi.printVariables();
@@ -233,22 +243,22 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
 	vector< vector<int> > parents = vector<vector<int> >();
 	vector<int> varsId = vector<int>();
 	
-    varsId.push_back(branchVar.literal);
+    varsId.push_back(branchVar.literalId);
     vars.push_back(branchVar);
     
 	parents.push_back(vector<int>());
 	//phi.printFormula();
     while((!phi.allVariablesAssigned() && (vars.size() > 0)) || vars.size() > 0){
         //we need assign the
-        
+       
         Variable var = vars.front();
 		vector<int> parent = parents.front();
         
-		int assignmentResult = phi.assignVariable(var.literal, var.value, level, parent);
+		int assignmentResult = phi.assignVariable(var.literalId,var.literal, var.value, level, parent);
         
 		//phi.printVariables();
 		//cout << "got here" << endl;
-        cout << "Considering variable: " << var.literal << endl;
+        cout << "Considering variable: " << var.literalId << endl;
 		cout << "Considering variable: " << var.letter << endl;
 		vars.erase(vars.begin(), vars.begin() + 1);
 		parents.erase(parents.begin(), parents.begin() + 1);
@@ -261,7 +271,7 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
 		/////////////////////////////////////////////////////////////////////////////////////////////
         ///////////////////THIS VARIABLE IS A COPY TO THE REAL ONE INSIDE FORMULA////////////////////
         /////////////////////////////////////////////////////////////////////////////////////////////
-        Variable assignedVar = phi.getVariable(var.literal);
+        Variable assignedVar = phi.getVariable(var.literalId);
         
         //clauses that comp of assigned variable
         vector<int> clauses;
@@ -276,6 +286,7 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
             int clauseId = clauses.at(i);
 			
             Clause clause = phi.getClause(clauseId);
+           
 			//cout << "ID of the clause: " << clauseId << ". Size of the clause: " << clause.literals.size() << endl;
 			//clause->printClause();
             //figure out which pointer you are
@@ -283,7 +294,7 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
             int otherPointer = NULL;
 
 			//cout << "clauseId: " << clauseId << endl;
-            if(var.literal == abs(clause.literals[clause.p1]))
+            if(var.literalId == clause.pointerToLiteralID(clause.p1))
 			{
                 //this means our variable is p1
                 currentPointer = clause.p1;
@@ -306,21 +317,26 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
             /////////////////// ACCSSING VARIABLE COPY /////////////////
             ////////////////////////////////////////////////////////////
             Variable otherPointerVariable = phi.getVariable(clause.pointerToLiteralID(otherPointer));
-           
-			if (!clause.evaluate(otherPointer, otherPointerVariable.value)) {
+            bool otherPointerEval = clause.evaluate(otherPointer, otherPointerVariable.value);
+            Variable currentPointerVariable = phi.getVariable(clause.pointerToLiteralID(currentPointer));
+            bool currentPointerEval = clause.evaluate(currentPointer, currentPointerVariable.value);
+			if (!otherPointerEval) {
 				//cout << "1. I'm inside if statement." << endl;
-				int implicatedVarId = clause.pointerToLiteralID(otherPointer);
+				int implicatedLiteralId = clause.pointerToLiteralID(otherPointer);
+                int implicatedVarLiteral =clause.literals[otherPointer];
 				int implicatedVarValue = clause.whatValueMakesThisLiteralTrue(otherPointer);
 				//cout << "Implied var: " << implicatedVarId << " with val: " << implicatedVarValue << endl;
 				//clause->getParentsByPointer(*otherPointer);
 				vector<int> parentLiterals(clause.getParentsByPointer(otherPointer));
-				vars.insert(vars.begin(), Variable(implicatedVarId, implicatedVarValue));
+				vars.insert(vars.begin(), Variable(implicatedLiteralId,implicatedVarLiteral, implicatedVarValue));
 				parents.insert(parents.begin(), parentLiterals);
+                clause.printClause();
+                cout << endl;
 				//the other pointer is true and so we should move it to that pointers
 				//return CONFLICT;
 				break;
 			}
-            else if(otherPointerVariable.value == -1){
+            else if(otherPointerVariable.value == -1 && !currentPointerEval){
 				
                 int newPointer = currentPointer;
                 for (unsigned int i = 0; i < clause.literals.size(); i++ ){
@@ -340,18 +356,24 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
 					//cout << "p1: " << clause->p1 << " p2: " << clause->p2 << endl;
                 }else{
 					//cout << "3. I'm inside else statement." << endl;
-                    int implicatedVarId = clause.pointerToLiteralID(otherPointer);
+                    int implicatedLiteralId = clause.pointerToLiteralID(otherPointer);
+                    int implicatedVarLiteral =clause.literals[otherPointer];
                     int implicatedVarValue = clause.whatValueMakesThisLiteralTrue(otherPointer);
 					//cout << "Implied var: " << implicatedVarId << " with val: " << implicatedVarValue << endl;
 					//clause->getParentsByPointer(*otherPointer);
                     vector<int> parentLiterals(clause.getParentsByPointer(otherPointer));
-                    vars.push_back(Variable(implicatedVarId, implicatedVarValue));
+                    /*for(auto const it: parentLiterals){
+                        parentLiterals[it] =  parentLiterals[it]*-1;
+                    }*/
+                    clause.printClause();
+                    cout << endl;
+                    vars.push_back(Variable(implicatedLiteralId,implicatedVarLiteral, implicatedVarValue));
                     parents.push_back(parentLiterals);
                 }
 
             }
         }
-		phi.print2Watched(phi.assignedIndex);
+		phi.print2Watched(true);
     }
 	cout << "Finished unit propagation" << endl;
     return NOCONFLICT;
@@ -360,11 +382,17 @@ Variable RandomBranchingVariable(Formula &phi) {
 	int brachingVar = 1 + rand() % phi.getNumOfVar();
 	cout << "pick branching value: " << phi.prevAssignedIndex[brachingVar] << endl;
 	if (phi.prevAssignedIndex[brachingVar] == 0)
-		return Variable(brachingVar, 1);
+		return Variable(brachingVar,brachingVar, 1);
 	else if (phi.prevAssignedIndex[brachingVar] == 1)
-		return Variable(brachingVar, 0);
-	else
-		return Variable(brachingVar, rand() % 2);
+		return Variable(brachingVar,brachingVar*-1, 0);
+    else{
+        int value = rand() % 2;
+        if (value == 1){
+            return Variable(brachingVar,brachingVar,value);
+        }else{
+            return Variable(brachingVar,brachingVar*-1,value);
+        }
+    }
 }
 /******************************************************
 * @description: Function that implements heuristics how variables are being picked for further search
@@ -398,14 +426,20 @@ Variable PickBranchingVariable(Formula &phi) {
 	cout << "pick branching value: " << phi.prevAssignedIndex[brachingVar] << endl;
 	if(phi.prevAssignedIndex[brachingVar] == 0)
 		
-        return Variable(brachingVar, 1);
+        return Variable(brachingVar,brachingVar, 1);
     
 	else if (phi.prevAssignedIndex[brachingVar] == 1)
         
-		return Variable(brachingVar, 0);
-	else
+		return Variable(brachingVar,brachingVar*-1, 0);
+    else{
         
-		return Variable(brachingVar, rand() % 2); //Not sure how do you decide which value to set??? Currently, it is assigned randomly.
+        int value = rand() % 2;
+        if (value == 1){
+            return Variable(brachingVar,brachingVar,value);
+        }else{
+            return Variable(brachingVar,brachingVar*-1,value);
+        }
+    }
 }
 
 /******************************************************
@@ -465,10 +499,11 @@ int ConflictAnalysis(Formula &phi, int dl) {
     for (auto const& parent : parentPos) {
         Node n = phi.implicationGraph.getNode(parent);
         cout << "ParentLiteralId: " << n.literalId << " n.value: " << n.value << endl;
-        if (n.value && (find(clause.begin(), clause.end(), -n.literalId) == clause.end()))
-            clause.push_back(-n.literalId); //learn the opposite value than what was initially assigned
-        else if (!n.value && (find(clause.begin(), clause.end(), n.literalId) == clause.end()))
-            clause.push_back(n.literalId);
+        //The literalId is absolute so we need to use id which basically just is the literal
+        if (n.value && (find(clause.begin(), clause.end(), -n.id) == clause.end()))
+            clause.push_back(-n.id); //learn the opposite value than what was initially assigned
+        else if (!n.value && (find(clause.begin(), clause.end(), n.id) == clause.end()))
+            clause.push_back(n.id);
         cout << "n.level" << n.level << endl;
         //Overwrite the parent with the lowest level found
         if (level > n.level) {
@@ -477,14 +512,15 @@ int ConflictAnalysis(Formula &phi, int dl) {
             lowestLevelParentNodeId = n.id;
         }
     }
-    for (auto const& parent : parentNeg) {
+    for (auto parent : parentNeg) {
         Node n = phi.implicationGraph.getNode(parent);
         cout << "n.literalId: " << n.literalId << " n.value: " << n.value << endl;
-        if (n.value && (find(clause.begin(), clause.end(), -n.literalId) == clause.end()))
-            clause.push_back(-n.literalId); //learn the opposite value than what was initially assigned
-        else if (!n.value && (find(clause.begin(), clause.end(), n.literalId) == clause.end()))
-            clause.push_back(n.literalId);
-        cout << "n.level" << n.level << endl;
+        //The literalId is absolute so we need to use id which basically just is the literal
+        if (n.value && (find(clause.begin(), clause.end(), -n.id) == clause.end()))
+            clause.push_back(-n.id); //learn the opposite value than what was initially assigned
+        else if (!n.value && (find(clause.begin(), clause.end(), n.id) == clause.end()))
+            clause.push_back(n.id);
+        cout << "n.level: " << n.level << endl;
         //Overwrite the parent with the lowest level found
         if (level > n.level) {
             level = n.level;
@@ -546,11 +582,11 @@ void Backtrack(Formula &phi, int beta) {
 */
 int CDCL(Formula &phi) {
     int dl = 0;
-	if (UnitPropagation(phi,Variable(0,-1),dl) == CONFLICT) {
+	if (UnitPropagation(phi,Variable(0,0,-1),dl) == CONFLICT) {
 		return UNSAT;
 	}
-	phi.printFormula();
-	phi.printIndex();
+	//phi.printFormula();
+	//phi.printIndex();
 	while (!phi.allVariablesAssigned()) {
 		Variable branchVar = PickBranchingVariable(phi);
 		cout << "***********************************************" << endl;
@@ -573,8 +609,8 @@ int CDCL(Formula &phi) {
 				//phi.printFormula();
 			}
 		}
-		phi.printVariables();
-		phi.printIndex();
+		//phi.printVariables();
+		//phi.printIndex();
 	}
 	return SAT;
 }

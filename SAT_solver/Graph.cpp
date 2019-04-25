@@ -14,20 +14,22 @@ Graph::~Graph()
 {
 }
 
-int Graph::addNode(int literal, int level, int value, vector<int> parentLiterals) {
+int Graph::addNode(int literalId,int literal, int level, int value, vector<int> parentLiterals) {
     //max two nodes per literal
     //we start by checking if the node with the same value exists
     int nodeId = literal;
-    if (value == 0){
-        nodeId = -1*nodeId;
-    }
+   
     
     if(levelIndex.find(level) == levelIndex.end()){
         levelIndex[level] = {};
     }
     if(nodes.find(nodeId) == nodes.end()){
-        nodes[nodeId] = Node(nodeId,abs(literal),value,level,parentLiterals);
+        
+        Node n = Node(nodeId,literal,value,level,parentLiterals);
+        nodes[nodeId] = n;
+   
     }else{
+        
         nodes[nodeId].addParents(parentLiterals);
         
     }
@@ -35,7 +37,7 @@ int Graph::addNode(int literal, int level, int value, vector<int> parentLiterals
     levelIndex[level].push_back(nodeId);
     cout << "NODE:"<<nodes[nodeId].letter<<" (" << nodeId << ") , LEVEL: " << level << " , VALUE: " << value << ", PARENTS: ";
     for(auto const node:parentLiterals){
-        cout << node << ",";
+        cout << nodes[node].letter << ",";
     }
     cout << endl;
     if(nodes.find(nodeId*-1) != nodes.end()){
@@ -80,14 +82,17 @@ void Graph::resetFailedState(){
 
 void Graph::printGraph(){
     cout << "GRAPH" << endl;
-    for (auto it: nodes){
-        Node node = nodes[it.first];
-        cout << node.letter << ": ";
-        for(auto const& parent : node.parentNodes){
+    unordered_map<int, Node>::iterator it = nodes.begin();
+    while(it != nodes.end())
+    {
+        cout << it->second.letter << ": ";
+        for(auto const parent : it->second.parentNodes){
             cout << nodes[parent].letter << ",";
         }
         cout << endl;
+        it++;
     }
+    
     
     
     
@@ -96,8 +101,8 @@ void Graph::printGraph(){
 
 
 Node Graph::getNode(int nodeId){
-    printGraph();
     if(nodes.find(nodeId) != nodes.end()){
+        cout <<"NODE: "<< nodeId << " " << nodes[nodeId].literalId << endl;
         return nodes[nodeId];
     }else{
         throw "NODE DOES NOT EXISTS";

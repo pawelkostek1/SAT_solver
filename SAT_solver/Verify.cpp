@@ -2,6 +2,7 @@
 #include "Formula.h"
 #include<vector>
 #include"Clause.h"
+#include<iostream>
 
 Verify::Verify()
 {
@@ -17,44 +18,47 @@ Verify::~Verify()
 }
 
 Formula Verify::createFormula(){
-    vector<Clause> clauses = vector<Clause>();
-    unordered_map<int,Variable> variables = unordered_map<int,Variable>();
-    variables[1] = Variable(1,-1);
-    variables[2] = Variable(2,-1);
-    variables[3] = Variable(3,-1);
-    variables[4] = Variable(4,-1);
-    variables[5] = Variable(5,-1);
-    variables[6] = Variable(6,-1);
-    cout << "Created variables" << endl;
-    clauses.push_back(Clause({1,2,6}));
-    clauses.push_back(Clause({-1,-3,5}));
-    clauses.push_back(Clause({6,-5}));
-    clauses.push_back(Clause({4,5,6}));
-    clauses.push_back(Clause({-6,-1,-3,2}));
-    clauses.push_back(Clause({1,6}));
-    clauses.push_back(Clause({3,1,-6}));
-    cout << "Created clauses" << endl;
+    Formula formula = Formula();
+    formula.addClause({1},true);
+    formula.addClause({1,2,6},true);
+    formula.addClause({-1,-3,5},true);
+    formula.addClause({6,-5},true);
+    formula.addClause({4,5,6},true);
+    formula.addClause({-6,-1,-3,2},true);
+    formula.addClause({1,6},true);
+    formula.addClause({3,1,-6},true);
     
-    return Formula(clauses, variables);
+    return formula;
 }
 bool Verify::testGraphAddNode(){
     Formula formula = createFormula();
     Graph graph = formula.implicationGraph;
-    graph.addNode(1, 0, 1, {});
-    graph.addNode(2, 0, 1, {1});
-    graph.addNode(3, 1, 0, {});
+    graph.addNode(1, 1,0, 1, {});
+    graph.addNode(2, 2,0, 1, {1});
+    graph.addNode(3, -3,1, 0, {});
    
-    graph.addNode(4, 1, 0, {-5,2,-3});
-    graph.addNode(5, 2, 0, {});
-    graph.addNode(6, 2, 0, {1,-4,-5});
+    graph.addNode(4, -4,1, 0, {-5,2,-3});
+    graph.addNode(5, -5,2, 0, {});
+    graph.addNode(6, -6,2, 0, {1,-4,-5});
     graph.printGraph();
     return false;
 }
 
 
-bool Verify::testUnitPropagation(){
+bool Verify::test2WatchedIndex(){
     Formula formula = createFormula();
-    
+    formula.assignVariable(1, 1, 0, 0, {});
+    formula.print2Watched(false);
+    formula.print2Watched(true);
+    formula.assignVariable(2, 1, 0, 0, {});
+    formula.print2Watched(false);
+    formula.print2Watched(true);
+    formula.assignVariable(3, 1, 0, 0, {});
+    formula.print2Watched(false);
+    formula.print2Watched(true);
+    formula.assignVariable(4, 1, 0, 0, {});
+    formula.print2Watched(false);
+    formula.print2Watched(true);
     return false;
 }
 
@@ -90,7 +94,7 @@ bool Verify::test2WatchedLiterals() {
 	initialState[5].negativeClauses = vector<int>{ 4 };
 	initialState[5].postiveClauses = vector<int>{ 2,5 };
 	
-	formula.print2Watched(list<int>{1,2,3,4,5,6});
+	formula.print2Watched(true);
 
 	bool result = true;
 	for (auto it : formula.getVariables()) {

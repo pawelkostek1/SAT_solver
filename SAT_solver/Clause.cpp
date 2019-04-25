@@ -11,8 +11,8 @@ Clause::Clause(vector<int> _value) {
 	}
 	//cout << endl;
 
-    p1 = 0;
-    p2 = 1;
+    p1 = literalIds.size() > 0? 0:-1;
+    p2 = literalIds.size() > 1? 1:-1;
     
 }
 bool Clause::evaluate(int p, int value){
@@ -38,9 +38,17 @@ int Clause::whatValueMakesThisLiteralTrue(int p){
         return 1;
     }
 }
-
+void Clause::changePointer(int currentPointer,int newPointer){
+    if (p1 == currentPointer){
+        p1 = newPointer;
+    }else if (p2 == currentPointer){
+        p2 = newPointer;
+    }else{
+        throw "TIRED TO REASIGN POINTER WHICH IS NOT SET";
+    }
+}
 vector<int> Clause::getParentsByPointer(int p){
-    vector<int> parents(literalIds);
+    vector<int> parents = literals;
 	//std::cout << "1. Parent size: " << parents.size() << endl;
 	//for (auto&& it : literalIds) {
 	//	cout << it << " ";

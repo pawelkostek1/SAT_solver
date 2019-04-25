@@ -7,7 +7,7 @@ public:
 	bool test2WatchedLiterals();
 	bool testGraphAddNode();
 	bool testGraph();
-    bool testUnitPropagation();
+    bool test2WatchedIndex();
     Formula createFormula();
 	Verify();
 	~Verify();

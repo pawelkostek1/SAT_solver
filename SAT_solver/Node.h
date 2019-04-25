@@ -17,7 +17,7 @@ public:
     
     int level;
     vector<int> parentNodes;
-    Node(int _id, int _literalId, int value,int level,vector<int>parentLiterals);
+    Node(int _literalId,int _literal, int value,int level,vector<int>parentLiterals);
 	Node();
     ~Node();
     void addParents(vector<int>parentLiterals);
