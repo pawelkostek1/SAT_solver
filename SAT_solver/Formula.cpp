@@ -65,8 +65,13 @@ int Formula::getNumOfClauses() {
 
 
 int Formula::addClause(vector<int> clause,bool allowNewVariables){
+
     Clause c = Clause(clause);
-    
+    if (clause.size() == 0){
+        cout << "EMPYT CLAAAUUUSEEE" << endl;
+        
+        
+    }
     for (auto literalId:c.literalIds){
         auto it = variables.find(literalId);
         if (it == variables.end()){
@@ -85,6 +90,7 @@ int Formula::addClause(vector<int> clause,bool allowNewVariables){
     }
    
     changeWatchedLiteral(cId, -1, 0);
+    
     if(clause.size() > 1){
         changeWatchedLiteral(cId, -1, 1);
     }
@@ -203,6 +209,10 @@ void Formula::addClauseToVariableIndex(int literalId,int clauseId,bool negativeI
     }
     variables[literalId] = v;
 }
+
+
+
+
 void Formula::changeWatchedLiteral(int clauseId,int currentRelativeLiteralId,int newRelativeLiteralId){
     Clause c = getClause(clauseId);
     
@@ -311,6 +321,8 @@ int Formula::removeSingleLiteralVariables2() {
                     variablesWithOneLiteral.push_back(clause[0]);
                     removeClause(clauses[i]);
                     clauses.erase(clauses.begin()+i);
+                    cout << clauses[i] << endl;
+                    print2Watched(true);
                     i--;
                     //Assign the single iteral to a corresponding value
                     if (clause[0] > 0) {
@@ -337,6 +349,9 @@ int Formula::removeSingleLiteralVariables2() {
                 if (normalPosition != clause.end()) {
                     removeClause(clauses[i]);
                     clauses.erase(clauses.begin()+i);
+                    cout << clauses[i] << endl;
+                    print2Watched(true);
+
                     i--;
                 }
                 else if (compPosition != clause.end()) {

@@ -35,12 +35,20 @@ void Variable::removeNegativeClause(int clauseId){
     auto it = find(negativeClauses.begin(),negativeClauses.end(),clauseId);
     if(it != negativeClauses.end()){
         negativeClauses.erase(it);
+    }else{
+        //cout << "";
+        //cout << "TRYING TO ADD CLAUSE " << clauseId << " TO NEGATIVE INDEX FOR VAR " << letter << "(" << literalId << ")" << endl;
+        throw "ERROR CLAUSE NOT EXISTS IN NEGATIVE INDEX";
     }
 }
 void Variable::removePositiveClause(int clauseId){
     auto it = find(postiveClauses.begin(),postiveClauses.end(),clauseId);
     if(it != postiveClauses.end()){
         postiveClauses.erase(it);
+    }else{
+        //cout << "";
+        //cout << "TRYING TO ADD CLAUSE " << clauseId << " TO NEGATIVE INDEX FOR VAR " << letter << "(" << literalId << ")" << endl;
+        throw "ERROR CLAUSE NOT EXISTS IN POSTIVE INDEX";
     }
 }
 Variable::Variable()

@@ -40,7 +40,7 @@ int main() {
     
 	//Read the encoded Enstein's puzzle into variable phi
 	//
-    Formula phi = LoadFormula("puzzle4.cnf");
+    Formula phi = LoadFormula("puzzle5.cnf");
     //Formula phi = tester.createFormula();
     cout << "INITIAL STATE" << endl;
     phi.printClauses();
@@ -296,7 +296,7 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
 		cout << "clauses size: " << clauses.size() << endl;
         for (unsigned int i=0; i< clauses.size(); i++){
             
-            int clauseId = clauses.at(i);
+            int clauseId = clauses[i];
 			
             Clause clause = phi.getClause(clauseId);
             if (clause.evaluateAll(phi.getVariables())){
@@ -331,7 +331,7 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
             ////////////////////////////////////////////////////////////
             /////////////////// ACCSSING VARIABLE COPY /////////////////
             ////////////////////////////////////////////////////////////
-            if(clause.pointerToLiteralID(otherPointer) == 0 || clause.pointerToLiteralID(otherPointer) > 100 || clause.pointerToLiteralID(currentPointer) == 0 || clause.pointerToLiteralID(currentPointer) > 100){
+            if(clause.pointerToLiteralID(otherPointer) == 0 || clause.pointerToLiteralID(otherPointer) > 100000 || clause.pointerToLiteralID(currentPointer) == 0 || clause.pointerToLiteralID(currentPointer) > 100000){
                 cout << "STOP" << endl;
             }
             
@@ -355,6 +355,12 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
                 cout << "//////////////////////// IMPLICATION ABOUT TO HAPPEN ////////////////////////" << endl;
                 phi.printClause(clauseId);
                 cout << "//////////////////////// IMPLICATION ABOUT TO HAPPEN ////////////////////////" << endl;
+                if(clauseId == 398 || clauseId == 617){
+                    
+                    
+                    
+                    
+                }
 				//the other pointer is true and so we should move it to that pointers
 				//return CONFLICT;
 				break;
@@ -367,7 +373,7 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
                     ////////////////////////////////////////////////////////////
                     /////////////////// ACCSSING VARIABLE COPY /////////////////
                     ////////////////////////////////////////////////////////////
-                    if(clause.pointerToLiteralID(i) == 0 || clause.pointerToLiteralID(i) > 100){
+                    if(clause.pointerToLiteralID(i) == 0 || clause.pointerToLiteralID(i) > 100000){
                         cout << "STOP" << endl;
                     }
                     
@@ -394,6 +400,17 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
                     phi.printClause(clauseId);
                     cout << "//////////////////////// IMPLICATION ABOUT TO HAPPEN ////////////////////////" << endl;
                     cout << endl;
+                    
+                    if(clauseId == 398 || clauseId == 617){
+                        
+                        
+                        
+                        
+                    }
+                    
+                    
+                    
+                    
                     vars.push_back(Variable(implicatedLiteralId,implicatedVarLiteral, implicatedVarValue));
                     parents.push_back(parentLiterals);
                     
