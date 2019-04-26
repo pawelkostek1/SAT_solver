@@ -54,7 +54,8 @@ public:
     int addClause(vector<int> clause,bool allowNewVariables);
     void addVariable(int literalId);
     void removeClause(int clauseId);
-    void updateClause(int clauseId,vector<int> clause);
+    //void updateClause(int clauseId,vector<int> clause);
     bool checkSolution();
     void printClause(int clauseId);
+    void removeClauseLiteral(int clauseId, int pRemove);
 };

@@ -45,6 +45,7 @@ int main() {
     cout << "INITIAL STATE" << endl;
     phi.printClauses();
     phi.print2Watched(true);
+    
     cout << "\n\n" << endl;
     //Solve the puzzle
     int ans = CDCL(phi);
@@ -418,7 +419,7 @@ int UnitPropagation(Formula &phi, Variable branchVar,int level) {
 
             }
         }
-		phi.print2Watched(true);
+		//phi.print2Watched(true);
     }
     
 	cout << "Finished unit propagation" << endl;
@@ -630,9 +631,9 @@ void Backtrack(Formula &phi, int beta) {
 	}
     phi.implicationGraph.resetFailedState();
     if(phi.needsSingleRemovalPass){
-        phi.print2Watched(true);
+        //phi.print2Watched(true);
         phi.removeSingleLiteralVariables2();
-        phi.print2Watched(true);
+        //phi.print2Watched(true);
     }
     phi.implicationGraph.printGraph();
     

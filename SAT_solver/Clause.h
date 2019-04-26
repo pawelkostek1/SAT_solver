@@ -26,5 +26,5 @@ public:
     vector<int> getParentsByPointer(int p);
 	void printClause();
     void changePointer(int currentPointer,int newPointer);
-    
+    void removeLiteral(int p);
 };

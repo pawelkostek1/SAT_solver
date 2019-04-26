@@ -9,6 +9,9 @@ Clause::Clause(vector<int> _value) {
 		literalIds.push_back(abs(_value[i]));
 		//cout << _value[i]<<" ";
 	}
+    if(_value.size() == 4){
+        
+    }
 	//cout << endl;
 
     p1 = literalIds.size() > 0? 0:-1;
@@ -58,6 +61,15 @@ void Clause::changePointer(int currentPointer,int newPointer){
     }else{
         throw "TIRED TO REASIGN POINTER WHICH IS NOT SET";
     }
+}
+void Clause::removeLiteral(int p){
+    if(p <= p1)
+        p1 = p1 - 1;
+    
+    if(p <= p2)
+        p2 = p2 - 1;
+    literals.erase(literals.begin()+p);
+    literalIds.erase(literalIds.begin()+p);
 }
 vector<int> Clause::getParentsByPointer(int p){
     vector<int> parents = literals;

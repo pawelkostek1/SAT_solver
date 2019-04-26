@@ -20,14 +20,16 @@ Verify::~Verify()
 Formula Verify::createFormula(){
     Formula formula = Formula();
     formula.addClause({1},true);
-    formula.addClause({1,2,6},true);
+    formula.addClause({1,6},true);
     formula.addClause({-1,-3,5},true);
     formula.addClause({6,-5},true);
     formula.addClause({4,5,6},true);
-    formula.addClause({-6,-1,-3,2},true);
+    formula.addClause({-6,-1,-3},true);
     formula.addClause({1,6},true);
     formula.addClause({3,1,-6},true);
-    
+    formula.addClause({2,-3},true);
+    formula.addClause({2,3},true);
+    formula.addClause({6},true);
     return formula;
 }
 bool Verify::testGraphAddNode(){

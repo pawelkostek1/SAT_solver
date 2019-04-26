@@ -34,6 +34,7 @@ void Variable::addNegativeClause(int clauseId){
 void Variable::removeNegativeClause(int clauseId){
     auto it = find(negativeClauses.begin(),negativeClauses.end(),clauseId);
     if(it != negativeClauses.end()){
+        
         negativeClauses.erase(it);
     }else{
         //cout << "";

@@ -88,8 +88,13 @@ int Formula::addClause(vector<int> clause,bool allowNewVariables){
     if(allowNewVariables){
         originalFormula[cId] = c;
     }
-   
+    if (cId == 237){
+        printClause(cId);
+    }
     changeWatchedLiteral(cId, -1, 0);
+    if (cId == 237){
+        printClause(cId);
+    }
     
     if(clause.size() > 1){
         changeWatchedLiteral(cId, -1, 1);
@@ -101,55 +106,73 @@ int Formula::addClause(vector<int> clause,bool allowNewVariables){
 void Formula::removeClause(int clauseId){
     cout << "REMOVING C -> " << clauseId << "...";
     Clause c = getClause(clauseId);
+    if (clauseId == 237 || clauseId == 324){
+        printClause(clauseId);
+    }
     changeWatchedLiteral(clauseId, c.p1, -1);
     changeWatchedLiteral(clauseId, c.p2, -1);
+    if (clauseId == 237){
+        printClause(clauseId);
+    }
     formula.erase(clauseId);
     cout << "DONE" << endl;
     
 }
-void Formula::updateClause(int clauseId, vector<int> clause){
+void Formula::removeClauseLiteral(int clauseId, int pRemove){
     cout << "UPDATING C -> " << clauseId << "...";
+    
+    if (clauseId == 1064 || clauseId == 237){
+        printClause(clauseId);
+    }
     Clause c = getClause(clauseId);
     cout << " FOUND CLAUSE: ";
-    c.printClause();
-    cout << " ";
-    cout << "removing clauses from pointer indexes p1=";
-    changeWatchedLiteral(clauseId, c.p1, -1);
-    cout << "DONE p2=";
-    changeWatchedLiteral(clauseId, c.p2, -1);
-    cout << "DONE swapping clauses for new: ";
-    c = Clause(clause);
-    formula[clauseId] = c;
-    cout << "DONE adding pointers p1=";
-    int p1 = -1;
-    int p2 = -1;
-    for(int i = 0; i < c.literalIds.size();i++){
-        int lId = c.literalIds[i];
-        Variable v = getVariable(lId);
-        if (p1 != -1 && p2 != -1){
-            break;
+    printClause(clauseId);
+    
+    
+    bool needToShiftPointer = pRemove == c.p1 || pRemove == c.p2;
+    if(needToShiftPointer){
+        int cp = pRemove == c.p2? c.p2:c.p1;
+        int op = pRemove == c.p2? c.p1:c.p2;
+        int np = -1;
+        int npV = -1;
+        for(int i = 0; i < c.literalIds.size();i++){
+            Variable v = getVariable(c.literalIds[i]);
+            bool isOtherP = i == op;
+            bool isCurrentP = i == cp;
+            bool isUnset = v.value == -1;
+            bool isNew = np == -1 && npV == -1;
+            //exit loop if the var is the current other pointer
+            if (isOtherP || isCurrentP)
+                continue;
+            if(isNew){
+                np = i;
+                npV = v.value;
+                if(v.value == -1)
+                    break;
+            }else{
+                if(v.value >= 0 && npV >= 0){
+                    np = i;
+                    npV = v.value;
+                }else if(v.value == -1){
+                    np = i;
+                    npV = v.value;
+                    break;
+                }
+                
+            }
         }
-        else if (v.value == -1 && p1 == -1){
-            p1 = i;
-        }else if (v.value == -1 && p2 == -1){
-            p2 = i;
-        }
-    }
-    if (p1 == -1){
-        p1 = p2 != 0? 0:1;
+        
+        cout << "gonna reassign: " << cp << " to " << np << endl;
+        printClause(clauseId);
+        
+        changeWatchedLiteral(clauseId, cp, np);
     }
     
-    changeWatchedLiteral(clauseId, -1, p1);
-    cout << "DONE";
-    if (clause.size() > 1){
-        cout << " p2=";
-        if (p2 == -1){
-            p2 = p1 != 0? 0:1;
-        }
-        changeWatchedLiteral(clauseId, -1, p2);
-        cout << "DONE";
-    }
-    cout << " FINISHED!" << endl;
+    formula[clauseId].removeLiteral(pRemove);
+    printClause(clauseId);
+    
+  
+    
 }
 
 Clause Formula::getClause(int clauseId){
@@ -216,16 +239,22 @@ void Formula::addClauseToVariableIndex(int literalId,int clauseId,bool negativeI
 void Formula::changeWatchedLiteral(int clauseId,int currentRelativeLiteralId,int newRelativeLiteralId){
     Clause c = getClause(clauseId);
     
-    if (newRelativeLiteralId >= 0){
-        int candidateLiteral = c.literals[newRelativeLiteralId];
-        int candidateAbsoluteLiteralId = c.pointerToLiteralID(newRelativeLiteralId);
-        addClauseToVariableIndex(candidateAbsoluteLiteralId,clauseId,candidateLiteral < 0);
-    }
+    
     if(currentRelativeLiteralId >= 0){
+        if (clauseId == 324){
+            
+            
+        }
         int currentLiteral = c.literals[currentRelativeLiteralId];
         int currentAbsoluteLiteralId = c.pointerToLiteralID(currentRelativeLiteralId);
         removeClauseFromVariableIndex(currentAbsoluteLiteralId,clauseId,currentLiteral < 0);
         
+    }
+    
+    if (newRelativeLiteralId >= 0){
+        int candidateLiteral = c.literals[newRelativeLiteralId];
+        int candidateAbsoluteLiteralId = c.pointerToLiteralID(newRelativeLiteralId);
+        addClauseToVariableIndex(candidateAbsoluteLiteralId,clauseId,candidateLiteral < 0);
     }
     if (currentRelativeLiteralId >= 0 && currentRelativeLiteralId >= 0){
         c.changePointer(currentRelativeLiteralId,newRelativeLiteralId);
@@ -233,7 +262,6 @@ void Formula::changeWatchedLiteral(int clauseId,int currentRelativeLiteralId,int
     
     
     formula[clauseId] = c;
-    
 }
 
 
@@ -322,7 +350,7 @@ int Formula::removeSingleLiteralVariables2() {
                     removeClause(clauses[i]);
                     clauses.erase(clauses.begin()+i);
                     cout << clauses[i] << endl;
-                    print2Watched(true);
+                    //print2Watched(true);
                     i--;
                     //Assign the single iteral to a corresponding value
                     if (clause[0] > 0) {
@@ -350,17 +378,18 @@ int Formula::removeSingleLiteralVariables2() {
                     removeClause(clauses[i]);
                     clauses.erase(clauses.begin()+i);
                     cout << clauses[i] << endl;
-                    print2Watched(true);
+                    //print2Watched(true);
 
                     i--;
                 }
                 else if (compPosition != clause.end()) {
-                    clause.erase(compPosition);
                     //cout << "Clause size: " << clause.size() << endl;
-                    if (clause.size() != 0)
-                        updateClause(clauses[i], clause);
-                    else
+                    if (clause.size() != 0){
+                        removeClauseLiteral(clauses[i], compPosition - clause.begin());
+                        i--;
+                    }else{
                         return CONFLICT;
+                    }
                 }
             }
             //printFormula();
