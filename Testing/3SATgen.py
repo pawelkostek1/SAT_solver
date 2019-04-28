@@ -24,8 +24,12 @@ L = int(input("Number of clauses?"))
 K = 3
 def fixed_clause_length(n,k):
     clause = ""
+    literals = []
     for i in range(k):
-        literal = random.randrange(n)
+        literal = None
+        while(literal == None or literal in literals):
+            literal = random.randrange(n)+1
+        literals.append(literal)
         sign = -1 if random.random() < 0.5 else 1
         literal_str = str(literal*sign)
         clause += "{} ".format(literal_str)
