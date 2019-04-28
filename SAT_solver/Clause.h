@@ -11,6 +11,7 @@ using namespace std;
 class Clause {
     
 public:
+    string id;
 	vector<int> literals;
 	vector<int> literalIds;
     int p1;

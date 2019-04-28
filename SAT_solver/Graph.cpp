@@ -37,18 +37,18 @@ int Graph::addNode(int literalId,int literal, int level, int value, vector<int> 
     }
     
     levelIndex[level].push_back(literal);
-    cout << "NODE:"<<node.letter<<" (" << literal << ") , LEVEL: " << level << " , VALUE: " << value << ", PARENTS: ";
+    //cout << "NODE:"<<node.letter<<" (" << literal << ") , LEVEL: " << level << " , VALUE: " << value << ", PARENTS: ";
     for(auto const parent:parentLiterals){
         if(node.literalId == 2){
             
             
         }
         Node pNode = getNode(parent);
-        cout << pNode.letter << ",";
+        //cout << pNode.letter << ",";
       
         
     }
-    cout << endl;
+    //cout << endl;
     if(nodes.find(nodeId*-1) != nodes.end()){
         //found a opposite node and thus a conflict
         failedState.addParents({nodeId,nodeId*-1});
@@ -94,24 +94,24 @@ void Graph::resetFailedState(){
 }
 
 void Graph::printGraph(){
-    cout << "GRAPH" << endl;
+    //cout << "GRAPH" << endl;
     for(auto level : levelIndex)
     {
-        cout << "LVL" << level.first << endl;
+        //cout << "LVL" << level.first << endl;
         for (auto const nodeId: level.second){
             Node  node = getNode(nodeId);
-            cout << "(" << node.literalId << ") ";
+            //cout << "(" << node.literalId << ") ";
             if (node.value == 0){
-                cout  << "-";
+                //cout  << "-";
             }
             
-            cout << node.letter << ": " << node.parentNodes.size() << " -> ";
+            //cout << node.letter << ": " << node.parentNodes.size() << " -> ";
             for(int i = 0; i < node.parentNodes.size(); i++){
                 
                 Node pNode = getNode(node.parentNodes[i]);
-                cout << (i > 0?",":"") << (pNode.value == 0?"-":"") << pNode.letter;
+                //cout << (i > 0?",":"") << (pNode.value == 0?"-":"") << pNode.letter;
             }
-            cout << endl;
+            //cout << endl;
         }
         
     }
@@ -125,12 +125,12 @@ void Graph::printGraph(){
 
 Node Graph::getNode(int nodeId){
     if(nodes.find(nodeId) != nodes.end()){
-        //cout <<"NODE: "<< nodeId << " " << nodes[nodeId].literalId << endl;
+        ////cout <<"NODE: "<< nodeId << " " << nodes[nodeId].literalId << endl;
         return nodes[nodeId];
     }else{
-        
-        throw "NODE DOES NOT EXISTS";
         printGraph();
+        throw "NODE DOES NOT EXISTS";
+        
     }
 }
 
@@ -141,7 +141,7 @@ vector<int> Graph::getRoots(Node node){
     vector<int> rn = {};
     while(pn.size() > 0){
         int nId = pn.front();
-        Node n = nodes[nId];
+        Node n = getNode(nId);
         pn.erase(pn.begin());
         if (n.parentNodes.size() == 0){
             if (find(rn.begin(),rn.end(),nId) == rn.end()){

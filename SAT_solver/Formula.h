@@ -15,8 +15,8 @@ class Formula {
 	float decay = 0.8;
     int totalClauseCounter = 0;
     unordered_map<int, Variable> variables;
-    unordered_map<int,Clause> formula;
-    unordered_map<int,Clause> originalFormula;
+    unordered_map<string,Clause> formula;
+    unordered_map<string,Clause> originalFormula;
 public:
 	
 	
@@ -24,7 +24,7 @@ public:
     list<int> unassignedIndex;
 	vector<int> prevAssignedIndex;
     unordered_map<int, vector<int> > clausesIndexes;
-	Formula(unordered_map<int,Clause> _F,unordered_map<int, Variable>);
+	Formula(unordered_map<string,Clause> _F,unordered_map<int, Variable>);
     Formula();
 	~Formula();
     Graph implicationGraph;
@@ -45,17 +45,18 @@ public:
 	void decayActivities();
     
     Variable getVariable(int literalId);
-    Clause getClause(int clauseId);
+    Clause getClause(string clauseId);
     bool needsSingleRemovalPass = true;
     unordered_map<int, Variable> getVariables();
-    void removeClauseFromVariableIndex(int literalId,int clauseId,bool negativeIndex);
-    void addClauseToVariableIndex(int literalId,int clauseId,bool negativeIndex);
-    void changeWatchedLiteral(int clauseId,int currentRelativeLiteralId,int newRelativeLiteralId);
-    int addClause(vector<int> clause,bool allowNewVariables);
+    void removeClauseFromVariableIndex(int literalId,string clauseId,bool negativeIndex);
+    void addClauseToVariableIndex(int literalId,string clauseId,bool negativeIndex);
+    void changeWatchedLiteral(string clauseId,int currentRelativeLiteralId,int newRelativeLiteralId);
+    string addClause(vector<int> clause,bool allowNewVariables);
     void addVariable(int literalId);
-    void removeClause(int clauseId);
-    //void updateClause(int clauseId,vector<int> clause);
+    void removeClause(string clauseId);
+    //void updateClause(string clauseId,vector<int> clause);
     bool checkSolution();
-    void printClause(int clauseId);
-    void removeClauseLiteral(int clauseId, int pRemove);
+    void printClause(string clauseId);
+    void removeClauseLiteral(string clauseId, int pRemove);
+    int tryReassigningToEmpty(int pointer,string clauseId);
 };

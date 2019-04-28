@@ -17,6 +17,8 @@ Verify::~Verify()
     
 }
 
+
+
 Formula Verify::createFormula(){
     Formula formula = Formula();
     formula.addClause({1},true);
@@ -69,13 +71,13 @@ bool Verify::test2WatchedIndex(){
 
 
 bool Verify::test2WatchedLiterals() {
-    Formula formula = createFormula();
+    /*Formula formula = createFormula();
 	struct state {
 		int literal;
 		vector<int> negativeClauses;
 		vector<int> postiveClauses;
 	};
-	cout << "Checking the initial state" << endl;
+	//cout << "Checking the initial state" << endl;
 	state initialState[6];
 	initialState[0].literal = 1;
 	initialState[0].negativeClauses = vector<int>{ 1,4 };
@@ -101,12 +103,12 @@ bool Verify::test2WatchedLiterals() {
 	bool result = true;
 	for (auto it : formula.getVariables()) {
 		for (int i = 0; i < initialState[it.first - 1].negativeClauses.size(); i++) {
-			cout << initialState[it.first - 1].negativeClauses[i] << " " << it.second.negativeClauses[i] << endl;
+			//cout << initialState[it.first - 1].negativeClauses[i] << " " << it.second.negativeClauses[i] << endl;
 			//if(initialState[it.first - 1].negativeClauses[i] != it.second.negativeClauses[i])
 				//result = false;
 		}
 		for (int i = 0; i < initialState[it.first - 1].postiveClauses.size(); i++) {
-			cout << initialState[it.first - 1].postiveClauses[i] << " " << it.second.postiveClauses[i] << endl;
+			//cout << initialState[it.first - 1].postiveClauses[i] << " " << it.second.postiveClauses[i] << endl;
 			//if (initialState[it.first - 1].postiveClauses[i] != it.second.postiveClauses[i])
 				//result = false;
 		}
@@ -116,9 +118,11 @@ bool Verify::test2WatchedLiterals() {
 			result = false;
 	}
 	if (result)
-		cout << "Sccesfully passed on the initial state test case!" << endl;
+		//cout << "Sccesfully passed on the initial state test case!" << endl;
 	else
-		cout << "Failed at the initial state test case." << endl;
+		//cout << "Failed at the initial state test case." << endl;
 
 	return result;
+     */
+    return false;
 }

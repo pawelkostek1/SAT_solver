@@ -8,6 +8,7 @@ public:
 	bool testGraphAddNode();
 	bool testGraph();
     bool test2WatchedIndex();
+    bool run3SATTest();
     Formula createFormula();
 	Verify();
 	~Verify();
